@@ -1,0 +1,12 @@
+{
+  "author" : "Jascha Casadio",
+  "description": "A Python package that generates *production ready* Nginx's vhost configuration files by resolving different listening ports, server names and locations scenarios. ",
+  "issues_url": "https://github.com/jaschac/nginx-resolution-tree/issues",
+  "license": "Apache-2.0",
+  "name": "nginx-resolution-tree",
+  "project_page": "https://github.com/jaschac/nginx-resolution-tree",
+  "source": "git@github.com:jaschac/nginx-resolution-tree.git",
+  "summary": "Nginx configuration resolution tree",
+  "tags":["nginx"],
+  "version": "0.0.1"
+}

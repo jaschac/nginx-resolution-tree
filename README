@@ -1,0 +1,92 @@
+TrxPy: A Python wrapper built on top of the Gameloft's E-Commerce RESTful API.
+
+Copyright (C) 2014-2015 Gameloft BARcelona
+Author: Jascha Casadio (jascha.casadio@gameloft.com)
+Official API Reference: https://webdoc.gameloft.org/index.php/IAP_transactions_history_API
+
+This document was last udpated August 4th 2015.
+
+This package is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT
+SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,  SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+
+1. WHAT IS IT
+TrxPy is a Python library built on top of the RESTful API provided by E-Commerce. It allows the
+client to retrieve all the IAPs associated to 1 to N anonynous credentials. The library supports
+each and every argument as the RESTful API does, optional ones included. As of today, this is the
+list of arguments supported:
+
+	• Mandatory:
+		• 	account_id: URL-encoded credential. Multiple credentials can be provided, if comma
+			separated.
+
+	• Optional:
+    	• 	from: start date (inclusive) for search. Format is YYYY-MM-DD HH:mm:ss.
+    	• 	to: end date (inclusive) for search. Format is YYYY-MM-DD HH:mm:ss.
+    	• 	product: product ID.
+    	• 	aggregated: if present, results will be shown in aggregated form.
+    	• 	includeRestores: if present, restores will be added in result.
+    	• 	restores: if present, only restores will be counted.
+    	• 	refunds: if present, only refunds will be counted (only GooglePlay refunds available).
+   		• 	beta: use data from Beta environment.
+    	• 	silo: the silo to search. Available values: 'gen', 'eur', 'noa', 'asa', 'apa', 'chn'
+    		(it is equal to 'gen' now)
+    	•	shop: shop to search. Available values: 'ios', 'googleplay', 'amazon', 'windows8',
+    		'wp8', 'android_other' (for another shops).
+
+
+2. MASSIVE
+Since the IAPs associated to a credential do not depend on the IAPs on any other one, TrxPy
+supports parallelism to speed up the process.
+
+First, the RESTful API support multiple anonymous credentials per request. TrxPy automatically
+splits the starting list of credentials into smaller bins of 100 credentials each, taking care to
+properly encode the request.
+
+Second, TrxPy supports both multiprocessing and Celery.
+
+In the first case, the main process, that starting the query, does block and spawns on its own a
+Pool of workers, which is implemented as a Singleton and thus is shared among all the instances of
+TrxPy on the same machine. The main process keeps iterating over the chunks until all of them have
+successfully been completed. Any chunk that fails gets automatically reprocessed.
+
+Celery can be used instead of multiprocessing. This requires a backend to support this. More
+specifically, TrxPy relies on having the following at its disposal:
+	• RabbitMQ as a broker.
+	• Redis as a results' backend.
+
+TrxPy can be used with Celery both in blocking and non blocking mode:
+
+	• 	In blocking mode TrxPy behaves similar to when multiprocessing is used. The main process
+		first queues the jobs, then iterates over their status, waiting for all of them to have
+		completed (either as a success or failure). Then, it iterates over them, collecting their
+		results and returning them merged.
+
+	• 	In on blocking mode, instead, TrxPy does queue the tasks, but then returns immediately to
+		the client, retuning the list of job IDs that were queued. It's the client that will take
+		responsibility to periodically check and get the data, when available.
+
+
+3. HOW TO BUILD
+TrxPy comes with a desployment shell script that does both create and install the package. Care
+must be taken to properly configure the name of the virtual environment.
+
+In general, to build and install TrxPy the following must be done:
+	• python setup.py sdist
+	• pip install dist/<TRXPY_PACKAGE_NAME>
+
+Alternatively, it can be installed as
+	• python setup.py build
+	• python setup.py install
+
+
+4. HOW TO RUN
+from trxpy.ecommerce import Ecommerce
+handle_ecommerce = Ecommerce()
+iaps = handle_ecommerce.query(**{  
+									"account_id"    :   list_of_anonymous_credentials,
+                                    }
+                                )
