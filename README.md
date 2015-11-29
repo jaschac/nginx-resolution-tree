@@ -2,6 +2,7 @@
 #### Table of Contents
 1. [Overview](#overview)
     * [The Resolution Problem](#the-resolution-problem)
+    * [A Resolution Example](#a-resolution-example)
 2. [Legal notice and disclaimer](#legal-notice-and-disclaimer)
 3. [Features](#features)
     * [What nginx-resolution-tree Does](#what-nginx-resolution-tree-does)
@@ -17,20 +18,77 @@
 
 Before installing and/or using `nginx-resolution-tree`, also known as `nrt`, make sure to check:
 
- - The [Official Nginx Documentation](http://nginx.org/en/docs/http/request_processing.html) for an in-depth description of how requests are processed.
+ - The [official Nginx documentation](http://nginx.org/en/docs/http/request_processing.html) for an in-depth description of how requests are processed.
  - The [Legal notice and disclaimer](#legal-notice-and-disclaimer) before installing it. By installing and/or using `nrt` or any of its modules, **you accept and agree** with the terms it is distributed with.
 
 #### The Resolution Problem
 `nginx-resolution-tree` has been developed to support the [docker-nginx](https://github.com/jaschac/docker-nginx) project, which required a system able to generate valid Nginx virtual host configuration files dynamically, based on the containers it is linked with at execution time. It's sole role is thus to validate Nginx scenarios and generate valid *production ready* configuration files ready to be deployed.
 
-As the Official Nginx Documentation states, requests are validated first against the IP:port, then against server names. Finally the location.
+As the official documentation states, *Nginx first tests the IP address and port of the request against the listen directives of the server blocks. It then tests the “Host” header field of the request against the server_name entries of the server blocks that matched the IP address and port. If the server name is not found, the request will be processed by the default server.*.
 
 The typical scenario `nrt` is used in is that of an Nginx container linked with several others, each bearing details, including the listening port(s), the server name(s) and the location(s) to serve. Given these details, `nrt` builds a *tree-like* structure that allows it to:
 
  - Validate the input, spotting collisions.
  - Properly group the linked containers into valid vhost configuration files.
 
-#### **Legal notice and disclaimer**
+#### A Resolution Example
+In order to show how `nrt` works, let's get through an example. Let imagine we have 3 containers linked to the same fourth Nginx container. The linked containers provide the fourth with the following **signatures**:
+
+```sh
+gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/
+gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/gunicorn1/
+gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/
+gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/gunicorn1/
+gunicorn2:0.0.0.0:80:gunicorn2.lostinmalloc.com:/
+gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/ # collision
+gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/gunicorn2/
+gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/home/
+gunicorn3:0.0.0.0:8080:gunicorn3.lostinmalloc.com:/
+```
+These signatures are turned into the following Resolution Tree:
+```sh
+                                                                     NRT
+                                                                      +
+                                                                      |
+                                 +------------------------------------+--------------------------------------+
+                                 |                                                                           |
+                                 v                                                                           v
+                            0.0.0.0:80                                                                  0.0.0.0:8080
+                                 +                                                                           +
+                                 |                                                                           |
+            +--------------------+----------------------+                      +-----------------------------+-------------+
+            |                                           |                      |                                           |
+            |                                           |                      |                                           |
+            v                                           v                      v                                           v
+gunicorn1.lostinmalloc.com                gunicorn2.lostinmalloc.com    gunicorn1.lostinmalloc.com       gunicorn3.lostinmalloc.com
+           +                                       +                               +                               +
+    +------+-----+                 +---------------+---+-------------+             |                               |
+    |            |                 |                   |             |             |                               |
+    |            |                 |                   |             |             |                               |
+    v            v                 v                   v             v             v                               v
+    /       /gunicorn1/            /                 /home/     /gunicorn2/        /                               /
+    +            +          +-------------+            +             +             +                               +
+    |            |          |             |            |             |             |                               |
+    |            |          |             |            |             |             |                               |
+    v            v          v             v            v             v             v                               v
+gunicorn1    gunicorn1  gunicorn2    gunicorn3     gunicorn1     gunicorn1     gunicorn1                       gunicorn3
+                                    (collision)
+```
+Without considering the collision, `nginx-resolution-tree` would generate the following `server blocks`:
+
+ - gunicorn1.lostinmalloc.com
+   - listen 80
+     - 2 locations
+   - listen 8080
+     - 1 location
+ - gunicorn2.lostinmalloc.com
+   - listen 80
+     - 3 locations
+ - gunicorn3.lostinmalloc.com
+   - listen 8080
+     - 1 location
+
+## **Legal notice and disclaimer**
 **This package is distributed under the Apache version 2.0 License, in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT  SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.**
 
 Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`.
@@ -64,3 +122,4 @@ Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`
 
 ## Frequently Asked Questions
 @TODO
+
