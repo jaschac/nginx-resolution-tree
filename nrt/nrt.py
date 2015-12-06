@@ -42,22 +42,22 @@ class Nrt(object):
             if not signature_regex.match(directive['signature']):
                 raise ValueError("A signature must have the following format: 'alias:ip:port:server_name:location'")
 
-        self.directives = kwargs.get("directives", None)
+        self.directives = directives
         self.listen = defaultdict(list)
 
-    def listens():
+    def listens(self):
         """
         Turns signatures into Listen objects. Listen objects are uniquely identified by the tuple
         ip:port.
         """
         for directive in self.directives:
-            alias, ip, port, server_name, location = directive.split(":")
+            alias, ip, port, server_name, location = directive['signature'].split(":")
             listen = "%s:%s" % (ip, port)
             listen_directive = "%s:%s:%s" % (alias, server_name, location)
             self.listen[listen].append(listen_directive)                    # pass it to Listen
 
 
-    def resolve():
+    def resolve(self):
         """
         Resolve the current NRT into vhost configuration files.
         """
