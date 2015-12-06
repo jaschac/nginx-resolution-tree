@@ -1,4 +1,6 @@
+include .gitignore
 include LICENSE
+include MANIFEST.in
 include metadata.json
 include README
 include README.md
