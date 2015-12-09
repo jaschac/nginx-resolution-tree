@@ -73,6 +73,8 @@ class Location(object):
             raise ValueError("A Location must be given a location.")
         if not isinstance(value, str):
             raise TypeError("The location must be a string, not %s." % (type(value)))
+        if value is "":
+            raise ValueError("A empty string is not a valid location.")
         if not value[0] == value[-1] == "/":
             raise ValueError("The locations must start and end with a forward slash.")
         self._location = value
