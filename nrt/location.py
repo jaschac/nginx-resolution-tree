@@ -44,6 +44,8 @@ class Location(object):
             raise ValueError("An alias must be provided.")
         if not isinstance(value, str):
             raise TypeError("The alias must be a string, not %s." % (type(value)))
+        if value is "":
+            raise ValueError("A empty string is not a valid alias.")
         if value not in self._alias:
             self._alias.append(value)
 
