@@ -24,7 +24,7 @@ class Location(object):
         Initializes a Location instance.
         """
         self._alias = []
-        self._location = kwargs.get("location", None)
+        self.location = kwargs.get("location", None)
 
 
     @property
