@@ -5,4 +5,5 @@ include metadata.json
 include README
 include README.md
 include requirements
+include nrt/tests/files/location.p
 include nrt/tests/files/nrt.p
