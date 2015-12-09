@@ -1,17 +1,23 @@
 # **nginx-resolution-tree**
 #### Table of Contents
-1. [Overview](#overview)
+1. [Legal notice and disclaimer](#legal-notice-and-disclaimer)
+2. [Overview](#overview)
     * [The Resolution Problem](#the-resolution-problem)
     * [A Resolution Example](#a-resolution-example)
-2. [Legal notice and disclaimer](#legal-notice-and-disclaimer)
 3. [Features](#features)
     * [What nginx-resolution-tree Does](#what-nginx-resolution-tree-does)
     * [What nginx-resolution-tree Does Not](#what-nginx-resolution-tree-does-not)
-4. [Setup](#setup)
-5. [Usage](#usage)
+4. [Reference](#reference)
+5. [Setup](#setup)
+6. [Usage](#usage)
     * [Unit Tests](#unit-tests)
-6. [Limitations](#limitations)
-7. [FAQs](#faqs)
+7. [Limitations](#limitations)
+8. [FAQs](#faqs)
+
+## **Legal notice and disclaimer**
+**This package is distributed under the Apache version 2.0 License, in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT  SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.**
+
+Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`.
 
 ## Overview
 `nginx-resolution-tree` is a Python package that generates *production ready* Nginx's vhost configuration files by resolving different listening ports, server names and locations scenarios. 
@@ -88,11 +94,6 @@ Without considering the collision, `nginx-resolution-tree` would generate the fo
    - listen 8080
      - 1 location
 
-## **Legal notice and disclaimer**
-**This package is distributed under the Apache version 2.0 License, in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT  SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.**
-
-Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`.
-
 ## Features
 `nginx-resolution-tree` is oriented to solve a very specific problem. As such it offer features aimed specifically at it, and nothing else.
 
@@ -107,6 +108,20 @@ Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`
 
  - Installing, configuring and deploying Ngnix.
  - Guaranteeing the remote servers are ready to listen to the given ports.
+
+## Reference
+The `nginx-resolution-tree` package is split into the following modules, each presenting a class named after it: `nrt`, `listen`, `server_name`, and `location`.
+
+#### Location
+This module defines the `Location` class, which represent an Nginx's location block and its
+properties. Multiple location blocks can be present within the same server block, but they must be
+unique. Each instance of the `Location` class is identified by its name. The name of a location must
+start and end with a forward slash, with the unique exception of the root location, which is
+represented by a single forward slash.
+
+A `Location` is associated to a list of containers, referred to as `alias`. For an Nginx configuration
+file to be valid, multiple containers must not redefine the same location within the same server
+block.
 
 ## Setup
 @TODO
