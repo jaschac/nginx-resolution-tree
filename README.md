@@ -112,6 +112,18 @@ Without considering the collision, `nginx-resolution-tree` would generate the fo
 ## Reference
 The `nginx-resolution-tree` package is split into the following modules, each presenting a class named after it: `nrt`, `listen`, `server_name`, and `location`.
 
+#### Server Name
+This module defines the `ServerName` class, which represents the server name that Nginx will try to
+match once the listen directive has been satisfied. The server name is very likely to be a domain
+or a subdomain, such as `example.com` or `www01.example.com`, but regular expressions are also
+valid. If Nginx cannot match a server to the request, or if the request does not come with a host
+field, the first entry that matched the listen directive will serve.
+
+Each `ServerName` class is uniquely identified by a name, referred to as `domain`. Different
+subdomains of the same domain are different `ServerName` objects, unless they are all catched
+through a regular expression. Each `ServerName` instance is also associated a list of `Location`
+objects.
+
 #### Location
 This module defines the `Location` class, which represent an Nginx's location block and its
 properties. Multiple location blocks can be present within the same server block, but they must be
