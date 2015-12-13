@@ -9,10 +9,11 @@
     * [What nginx-resolution-tree Does Not](#what-nginx-resolution-tree-does-not)
 4. [Reference](#reference)
 5. [Setup](#setup)
+    * [Installing through pip](#installing-through-pip)
+    * [Installing by manually building](#installing-by-manually-building)
 6. [Usage](#usage)
     * [Unit Tests](#unit-tests)
 7. [Limitations](#limitations)
-8. [FAQs](#faqs)
 
 ## **Legal notice and disclaimer**
 **This package is distributed under the Apache version 2.0 License, in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT  SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.**
@@ -136,17 +137,126 @@ file to be valid, multiple containers must not redefine the same location within
 block.
 
 ## Setup
-@TODO
+`nrt` can be installed either through `pip` or by manually building it from the source. In both cases, the best scenario is to install it in a completely sandboxed [virtual environment](https://virtualenv.readthedocs.org/en/latest), which guarantees isolation from other projects and their dependencies. Note that in all cases, unless in a virtual environment, the install command needs to be executed as `sudo`.
+
+#### Installing through pip
+First thing first, make sure to install `nrt`'s dependencies. Installing all of them at once is very straightfoward:
+
+```bash
+$ pip install -r requirements
+```
+
+Next, proceed to install `nrt`:
+
+```bash
+$ pip install nginx-resolution-tree-x.y.z.tar.gz
+```
+
+#### Installing by manually building
+If you are not using `pip` then you should. But if you really want to go on without it, then you are responsible to manually build and install not only `nrt` itself, but also all of its dependencies, if any. These are listed in the `requirements` file present in the root of the project. The packages can be downloaded from `PyPi`. Each should come with its own installation instructions.
+
+Once the dependencies have been installed, `nrt` must be retrieved. There are two ways to get the source:
+
+  - Downloading it in `.tar.gz`.
+  - Cloning it from GitHub.
+
+If you have the `.tar.gz`, then you must, first of all, extract it:
+
+```bash
+$ gunzip nginx-resolution-tree-x.y.z.tar.gz
+$ tar xvf nginx-resolution-tree-x.y.z.tar
+$ cd nginx-resolution-tree
+```
+
+If you instead prefer to clone the Git repository:
+
+```bash
+$ git clone git@github.com:jaschac/nginx-resolution-tree.git nginx-resolution-tree
+$ cd nginx-resolution-tree
+```
+
+In both cases we end up inside the root directory of the project, which has the following structure:
+
+```bash
+nginx-resolution-tree/
+├── [ 11K]  LICENSE
+├── [ 195]  MANIFEST.in
+├── [ 583]  metadata.json
+├── [4.0K]  nrt
+│   ├── [   0]  __init__.py
+│   ├── [2.6K]  listen.py
+│   ├── [2.5K]  location.py
+│   ├── [2.6K]  nrt.py
+│   ├── [2.9K]  nrt.pyc
+│   ├── [2.4K]  servername.py
+│   └── [4.0K]  tests
+│       ├── [4.0K]  files
+│       │   ├── [   0]  listen.p
+│       │   ├── [   0]  location.p
+│       │   ├── [   0]  nrt.p
+│       │   └── [   0]  servername.p
+│       ├── [   0]  __init__.py
+│       ├── [1.9K]  test_base.py
+│       ├── [2.1K]  test_base.pyc
+│       ├── [   0]  test_listen.py
+│       ├── [7.3K]  test_location.py
+│       ├── [5.4K]  test_nrt.py
+│       ├── [4.5K]  test_nrt.pyc
+│       └── [6.6K]  test_servername.py
+├── [4.4K]  README
+├── [9.2K]  README.md
+├── [   0]  requirements
+└── [ 742]  setup.py
+```
+
+We can now build and install `nrt`. These steps are the same independently of the way we had the package.
+
+```bash
+$ python setup.py build
+$ python setup.py install
+```
+
 
 ## Usage
 @TODO
 
 #### Unit Tests
-@TODO
+`nrt` comes with an **exhaustive** set of unit tests. Make sure all of them pass before committing any change to the `master` branch.
+
+```bash
+$ for module in listen location nrt servername; do python -m unittest nrt.tests.test_$module; done
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+OK
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.003s
+
+OK
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.002s
+
+OK
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+OK
+```
 
 ## Limitations
-@TODO
+`nrt` has been developed and tested with the following scenarios. It is not guaranteed to work otherwise.
 
-## Frequently Asked Questions
-@TODO
-
+  - Linux
+    - Debian
+      - 3.2.68-1+deb7u6
+      - 3.16.7-ckt11-1+deb8u6~bpo70+1-amd64
+  - Python
+    - 3.4.3
+  - pip
+    - 7.1.2 (python 3.4)
+  - virtualenv
+    - 13.1.2
