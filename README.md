@@ -233,7 +233,7 @@ $ python setup.py install
 $ for module in listen location nrt servername; do python -m unittest nrt.tests.test_$module; done
 
 ----------------------------------------------------------------------
-Ran 0 tests in 0.000s
+Ran 16 tests in 0.004s
 
 OK
 ............
