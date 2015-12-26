@@ -119,6 +119,15 @@ The `nginx-resolution-tree` package is split into the following modules, each pr
   - `server_name`
   - `location`
 
+
+### Listen
+This module defines the `Listen` class, which represent a unique IP:port pair. This pair is usually
+referred to as the address. It defaults to 0.0.0.0:80 and it is only able to deal with IPv4
+addresses. Each `Listen` object is associated a list of unique server names.
+
+`Listen` objects are the first to be checked when a signature is resolved into an Nginx Resolution
+Tree.
+
 #### Server Name
 This module defines the `ServerName` class, which represents the server name that Nginx will try to
 match once the listen directive has been satisfied. The server name is very likely to be a domain
