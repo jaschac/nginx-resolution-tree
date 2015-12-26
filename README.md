@@ -18,15 +18,15 @@
 ## **Legal notice and disclaimer**
 **This package is distributed under the Apache version 2.0 License, in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT  SHALL THE AUTHOR(s) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF  SUCH DAMAGE.**
 
-Make sure to read the `LICENSE` that is distributed with `nginx-resolution-tree`.
+Make sure to read the [LICENSE](https://github.com/jaschac/nginx-resolution-tree/blob/master/LICENSE) that is distributed with `nginx-resolution-tree`.
 
 ## Overview
-`nginx-resolution-tree` is a Python package that generates *production ready* Nginx's vhost configuration files by resolving different listening ports, server names and locations scenarios. 
+`nginx-resolution-tree`, also known as `nrt`, is a Python package that generates *production ready* Nginx's vhost configuration files by resolving different listening ports, server names and locations scenarios. 
 
-Before installing and/or using `nginx-resolution-tree`, also known as `nrt`, make sure to check:
+Before installing and/or using `nginx-resolution-tree` make sure to check:
 
  - The [official Nginx documentation](http://nginx.org/en/docs/http/request_processing.html) for an in-depth description of how requests are processed.
- - The [Legal notice and disclaimer](#legal-notice-and-disclaimer) before installing it. By installing and/or using `nrt` or any of its modules, **you accept and agree** with the terms it is distributed with.
+ - The [Legal notice and disclaimer](#legal-notice-and-disclaimer). By installing and/or using `nrt` or any of its modules, **you accept and agree** with the terms it is distributed with.
 
 #### The Resolution Problem
 `nginx-resolution-tree` has been developed to support the [docker-nginx](https://github.com/jaschac/docker-nginx) project, which required a system able to generate valid Nginx virtual host configuration files dynamically, based on the containers it is linked with at execution time. It's sole role is thus to validate Nginx scenarios and generate valid *production ready* configuration files ready to be deployed.
@@ -39,9 +39,10 @@ The typical scenario `nrt` is used in is that of an Nginx container linked with 
  - Properly group the linked containers into valid vhost configuration files.
 
 #### A Resolution Example
-In order to show how `nrt` works, let's get through an example. Let imagine we have 3 containers linked to the same fourth Nginx container. The linked containers provide the fourth with the following **signatures**:
+In order to show how `nrt` works, let's get through an example. Let imagine we have 3 containers linked to the same fourth Nginx (`docker-nginx`) container. The linked containers provide the fourth with the following **signatures**:
 
 ```sh
+# alias:listening address:listening port:server name:location
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/gunicorn1/
 gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/
@@ -52,7 +53,7 @@ gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/gunicorn2/
 gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/home/
 gunicorn3:0.0.0.0:8080:gunicorn3.lostinmalloc.com:/
 ```
-These signatures are turned into the following Resolution Tree:
+These signatures are turned into the following Resolution Tree by `nrt`:
 ```sh
                                                                      NRT
                                                                       +
@@ -102,7 +103,7 @@ Without considering the collision, `nginx-resolution-tree` would generate the fo
 
  - Validates the input, failing in case containers collide.
  - Generates valid *production-ready* Nginx virtual host configuration files, one per `server_name`. 
- - Produces configurations able to serve Green Unicorn and PPHP-FPM powered web applications.
+ - Produces configurations able to serve Green Unicorn and PHP-FPM powered web applications.
 
 #### What nginx-resolution-tree Does NOT
 `nginx-resolution-tree`  is NOT responsible of:
@@ -111,7 +112,12 @@ Without considering the collision, `nginx-resolution-tree` would generate the fo
  - Guaranteeing the remote servers are ready to listen to the given ports.
 
 ## Reference
-The `nginx-resolution-tree` package is split into the following modules, each presenting a class named after it: `nrt`, `listen`, `server_name`, and `location`.
+The `nginx-resolution-tree` package is split into the following modules, each presenting a class named after it:
+
+  - `nrt`
+  - `listen`
+  - `server_name`
+  - `location`
 
 #### Server Name
 This module defines the `ServerName` class, which represents the server name that Nginx will try to
