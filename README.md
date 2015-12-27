@@ -120,7 +120,30 @@ The `nginx-resolution-tree` package is split into the following modules, each pr
   - `location`
 
 
-### Listen
+#### Nrt
+This module defines the `Nrt` class, which represents the resolution problem *per se*.
+
+An NRT tree takes, as an input, a list of directives. Each synthetises the specific blocks required
+to serve content at a specific location. Each directive is represented as a dictionary, whose keys
+are a mandatory `signature` and optional `parameters`. The former is a colon separated string,
+while the latter is, again, a dictionary which contains extra information such as default servers
+and redirections.
+
+The `Nrt` class is responsible of igniting the process of resolution of the input directives into
+objects and relationships, and, eventually, into vhost configuration files, if the overall scenario
+is *Nginx valid*. As such, an `Nrt` instance occupies **the root of the resolution tree**. Its
+children are, in order, instances of the `Listen`, `ServerName` and `Location` classes. They do
+occupy the second, third and fouth levels of the Nrt tree. The leafs of the tree are the aliases of
+the containers. They are not represented by a class.
+
+An `Nrt` instance, *per se*, does keep track of its unique `Listen` objects. This is achieved
+through a dictionary which maps the unique address to the reference itself. The `Nrt` class is thus
+responsible of instantiating Listen instances. The Nrt class, though, is not responsible of
+generating any other component of the tree. Each level of the tree is indeed responsible of
+generating its lower level, properly mapping those objects.
+
+
+#### Listen
 This module defines the `Listen` class, which represent a unique IP:port pair. This pair is usually
 referred to as the address. It defaults to 0.0.0.0:80 and it is only able to deal with IPv4
 addresses. Each `Listen` object is associated a list of unique server names.
@@ -194,15 +217,14 @@ In both cases we end up inside the root directory of the project, which has the 
 
 ```bash
 nginx-resolution-tree/
-├── [ 11K]  LICENSE
+├── [ 11K]  [ 11K]  LICENSE
 ├── [ 195]  MANIFEST.in
 ├── [ 583]  metadata.json
 ├── [4.0K]  nrt
 │   ├── [   0]  __init__.py
-│   ├── [2.6K]  listen.py
+│   ├── [2.9K]  listen.py
 │   ├── [2.5K]  location.py
-│   ├── [2.6K]  nrt.py
-│   ├── [2.9K]  nrt.pyc
+│   ├── [5.0K]  nrt.py
 │   ├── [2.4K]  servername.py
 │   └── [4.0K]  tests
 │       ├── [4.0K]  files
@@ -212,14 +234,12 @@ nginx-resolution-tree/
 │       │   └── [   0]  servername.p
 │       ├── [   0]  __init__.py
 │       ├── [1.9K]  test_base.py
-│       ├── [2.1K]  test_base.pyc
-│       ├── [   0]  test_listen.py
+│       ├── [ 11K]  test_listen.py
 │       ├── [7.3K]  test_location.py
-│       ├── [5.4K]  test_nrt.py
-│       ├── [4.5K]  test_nrt.pyc
+│       ├── [9.2K]  test_nrt.py
 │       └── [6.6K]  test_servername.py
 ├── [4.4K]  README
-├── [9.2K]  README.md
+├── [ 15K]  README.md
 ├── [   0]  requirements
 └── [ 742]  setup.py
 ```
@@ -242,17 +262,17 @@ $ python setup.py install
 $ for module in listen location nrt servername; do python -m unittest nrt.tests.test_$module; done
 
 ----------------------------------------------------------------------
-Ran 16 tests in 0.004s
+Ran 16 tests in 0.003s
 
 OK
 ............
 ----------------------------------------------------------------------
-Ran 12 tests in 0.003s
+Ran 12 tests in 0.002s
 
 OK
-.........
+.................
 ----------------------------------------------------------------------
-Ran 9 tests in 0.002s
+Ran 17 tests in 0.004s
 
 OK
 ..........
@@ -268,6 +288,7 @@ OK
   - Linux
     - Debian
       - 3.2.68-1+deb7u6
+      - 3.2.73-2+deb7u1
       - 3.16.7-ckt11-1+deb8u6~bpo70+1-amd64
   - Python
     - 3.4.3
