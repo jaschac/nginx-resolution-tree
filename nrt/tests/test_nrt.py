@@ -5,6 +5,7 @@ This module tests the Nrt module.
 """
 from collections import defaultdict
 
+from nrt.listen import Listen
 from nrt.nrt import Nrt
 from nrt.tests.test_base import TestBase
 
@@ -28,133 +29,260 @@ class TestNrt(TestBase):
         Tests that an Nrt object is properly instantiated if its mandatory parameters are properly
         passed in.
         """
+        handle_nrt = Nrt(**{})
+        self.assertEqual(handle_nrt.directives, [])
+        self.assertEqual(handle_nrt.listen, {})
+        del handle_nrt
+
+
+    def test_directives_correct(self):
+        """
+        Tests that an Nrt object properly returns the directives that were added to it.
+        """
+        handle_nrt = Nrt(**{})
         directives = [
                         { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"}
                         ]
-        handle_nrt = Nrt(**{
-                                "directives" : directives
-                                }
+        for directive in directives:
+            handle_nrt.directives = directive
+        response = handle_nrt.directives
+        for directive, expected_directive in zip(response, directives):
+            self.assertEqual(directive, expected_directive)
+        del handle_nrt
+
+
+    def test_directives_correct_no_dupes(self):
+        """
+        Tests that an Nrt object only stores a unique copy of directives having the same signature.
+        """
+        handle_nrt = Nrt(**{})
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        ]
+        for directive in directives:
+            handle_nrt.directives = directive
+        response = handle_nrt.directives
+        self.assertEqual(len(response), 1)
+        del handle_nrt
+
+
+    def test_directives_correct_no_directives(self):
+        """
+        Tests that an emtpy list is returned if an Nrt object isn't given any directive.
+        """
+        handle_nrt = Nrt(**{})
+        response = handle_nrt.directives
+        expected_response = []
+        self.assertEqual(response, expected_response)
+        del handle_nrt
+
+
+    def test_directives_wrong_missing_directive(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive without passing
+        one in.
+        """
+        handle_nrt = Nrt(**{})
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_nrt,
+                            "directives",
+                            None,
                             )
-        self.assertEqual(directives, handle_nrt.directives)
+        del handle_nrt
 
 
-    def test_init_correct_no_directives(self):
+    def test_directives_wrong_mistyped_directive(self):
         """
-        Tests that an Nrt object is properly instantiated if its mandatory parameters are properly
-        passed in but they are empty.
+        Tests that a TypeError exception is raised if we try to add a directive but the directive
+        itself is not a dictionary.
         """
-        directives = []
-        handle_nrt = Nrt(**{
-                                "directives" : directives
-                                }
-                            )
-        self.assertEqual(directives, handle_nrt.directives)
-
-
-    def test_init_wrong_mistyped_directives(self):
-        """
-        Tests that a TypeError exception is raised if an Nrt is initialized with the directives
-        parameter not being a list.
-        """
+        handle_nrt = Nrt(**{})
         self.assertRaises(
                             TypeError,
-                            Nrt,
-                            **{
-                                "directives" : "not_a_list",
-                                }
+                            setattr,
+                            handle_nrt,
+                            "directives",
+                            "not_a_dictionary",
                             )
+        del handle_nrt
 
 
-    def test_init_wrong_mistyped_directive(self):
-        """
-        Tests that a TypeError exception is raised if any of the directives passed in to Nrt is not
-        a dictionary.
-        """
-        self.assertRaises(
-                            TypeError,
-                            Nrt,
-                            **{
-                                "directives" : [
-                                                "not_a_dictionary_1",
-                                                "not_a_dictionary_2",
-                                                ],
-                                }
-                            )
-
-
-    def test_init_wrong_directive_missing_signature(self):
+    def test_directives_wrong_missing_signature(self):
         """
         Tests that a ValueError exception is raised if any of the directives passed in to Nrt does
         not have the mandatory signature key.
         """
+        handle_nrt = Nrt(**{})
         self.assertRaises(
                             ValueError,
-                            Nrt,
-                            **{
-                                "directives" : [
-                                                {"not_signature" : 124,},
-                                                ],
-                                }
+                            setattr,
+                            handle_nrt,
+                            "directives",
+                            {"not_signature" : 124},
                             )
+        del handle_nrt
 
 
-    def test_init_wrong_directive_mistyped_signature(self):
+    def test_directives_wrong_mistyped_signature(self):
         """
         Tests that a TypeError exception is raised if any of the directives passed in to Nrt has
         a signature that is not a string.
         """
+        handle_nrt = Nrt(**{})
         self.assertRaises(
                             TypeError,
-                            Nrt,
-                            **{
-                                "directives" : [
-                                                {"signature" : ["not_a_string"],},
-                                                ],
-                                }
+                            setattr,
+                            handle_nrt,
+                            "directives",
+                            {"signature" : 124},
                             )
+        del handle_nrt
 
 
-    def test_init_wrong_directive_misformatted_signature(self):
+    def test_directives_wrong_misformatted_signature(self):
         """
-        Tests that a TypeError exception is raised if any of the directives passed in to Nrt has
+        Tests that a ValueError exception is raised if any of the directives passed in to Nrt has
         a signature with the wrong format.
         """
+        handle_nrt = Nrt(**{})
         self.assertRaises(
                             ValueError,
-                            Nrt,
-                            **{
-                                "directives" : [
-                                                {"signature" : "wrong_format",},
-                                                ],
-                                }
+                            setattr,
+                            handle_nrt,
+                            "directives",
+                            {"signature" : "wrong_format",},
                             )
+        del handle_nrt
 
 
-    def test_listens_correct(self):
+    def test_export(self):
         """
-        Tests that the listen method turns the input directives into proper Listen objects.
+        Tests that the export property hasn't been implemented, yet.
         """
-        handle_nrt = Nrt(**{
-                                "directives" : [
-                                                    { "signature" : "a:0.0.0.0:80:a.b.c:/"},
-                                                ]
-                                }
+        handle_nrt = Nrt(**{})
+        self.assertRaises(
+                            NotImplementedError,
+                            getattr,
+                            handle_nrt,
+                            "export",
                             )
-        handle_nrt.listens()
-        expected_response = defaultdict(list)
-        expected_response["0.0.0.0:80"].append("a:a.b.c:/")
-        self.assertEqual(handle_nrt.listen, expected_response)
+        del handle_nrt
 
 
-    def test_listens_correct_no_directives(self):
+    def test_is_valid(self):
         """
-        Tests that the listen method generated an tempy list of directives into an empty list of
-        Listen objects.
+        Tests that the is_valid property hasn't been implemented, yet.
         """
-        handle_nrt = Nrt(**{
-                                "directives" : []
-                                }
+        handle_nrt = Nrt(**{})
+        self.assertRaises(
+                            NotImplementedError,
+                            getattr,
+                            handle_nrt,
+                            "is_valid",
                             )
-        handle_nrt.listens()
-        expected_response = defaultdict(list)
-        self.assertEqual(handle_nrt.listen, expected_response)
+        del handle_nrt
+
+
+    def test_listen_correct(self):
+        """
+        Tests that the listen property properly returns the listen objects stored into it, by
+        mapping them to their address.
+        """
+        ip = "1.2.3.4"
+        port = 1234
+        handle_nrt = Nrt(**{})
+        handle_listen = Listen(**{
+                                    "ip" : ip,
+                                    "port" : port,
+                                    }
+                                )
+        handle_nrt.listen = handle_listen
+        self.assertTrue(handle_listen.address in handle_nrt.listen.keys())
+        del handle_nrt
+        del handle_listen
+
+
+    def test_listen_correct_empty(self):
+        """
+        Tests that an empty dictionary is properly returned if the Nrt instance has no listen
+        object associated to it.
+        """
+        handle_nrt = Nrt(**{})
+        response = handle_nrt.listen
+        expected_response = {}
+        self.assertEqual(response, expected_response)
+        del handle_nrt
+
+
+    def test_listen_correct_no_dupes(self):
+        """
+        Tests that an Nrt object properly stores unique Listen addresses.
+        """
+        ip = "1.2.3.4"
+        port = 1234
+        handle_nrt = Nrt(**{})
+        handle_listen = Listen(**{
+                                    "ip" : ip,
+                                    "port" : port,
+                                    }
+                                )
+        for i in range(10):
+            handle_nrt.listen = handle_listen
+        self.assertEqual(len(handle_nrt.listen.keys()), 1)
+        del handle_nrt
+        del handle_listen
+
+
+    def test_listen_wrong_missing_listen(self):
+        """
+        Tests that a ValueError exception is raised if we try to set the listen property of an Nrt
+        object without passing in any listen.
+        """
+        handle_nrt = Nrt(**{})
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_nrt,
+                            "listen",
+                            None
+                            )
+        del handle_nrt
+
+
+    def test_listen_wrong_mistyped_listen(self):
+        """
+        Tests that a TypeError exception is raised if we try to set the listen property of an Nrt
+        object passing in a listen that is not an instance of the Listen class.
+        """
+        handle_nrt = Nrt(**{})
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_nrt,
+                            "listen",
+                            "not_an_instance_of_Listen"
+                            )
+        del handle_nrt
+
+
+    def test_resolve_correct(self):
+        """
+        Tests that the resolve method properly turns the directives into unique Listen objects.
+        """
+        handle_nrt = Nrt(**{})
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        ]
+        for directive in directives:
+            handle_nrt.directives = directive
+        self.assertEqual(handle_nrt.listen, {})
+        handle_nrt.resolve()
+        self.assertEqual(len(handle_nrt.listen.keys()), 2)
+        del handle_nrt
