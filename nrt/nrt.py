@@ -101,7 +101,7 @@ class Nrt(object):
     @listen.setter
     def listen(self, listen):
         """
-        Adds a Listen instance to those currently part of the Nrt.
+        Adds a Listen instance to those currently part of the Nrt. 
         """
         if listen is None:
             raise ValueError("A listen must be given.")
@@ -114,19 +114,25 @@ class Nrt(object):
 
     def resolve(self):
         """
-        Resolve the input directives into a unique list of Listen objects. They in turn will turn
-        the non address part of the directives into objects and relationships.
+        Resolve the input directives into a unique list of Listen objects. If multiple directives
+        refer to the same Listen's address, only one is created and all the directives are stored
+        there. The Listen object will, internally, take care to properly split them into proper
+        ServerName objects.
         """
 
         # Generate Listen objects
         for directive in self.directives:
             alias, ip, port, server_name, location = directive["signature"].split(":")
-            handle_listen = Listen(**{
-                                        "directive" : directive,
-                                        "ip" : ip,
-                                        "port" : port,
-                                        }
-                                    )
-            self.listen = handle_listen
+            address = "%s:%s" % (ip, port)
+
+            if address not in self._listen.keys():
+                handle_listen = Listen(**{
+                                            "ip" : ip,
+                                            "port" : port,
+                                            }
+                                        )
+                self.listen = handle_listen
+
+            self.listen[address].directives = directive
 
         # Validate the Nrt (check the paper!)
