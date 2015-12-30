@@ -7,6 +7,7 @@ address nor the port are mandatory parameters: the first defaults to 0.0.0.0, wh
 80.  Each Listen object is also associated with a list of unique ServerName objects.
 """
 
+from re import compile, match
 from socket import AF_INET, error, inet_aton, inet_pton
 
 from nrt.servername import ServerName
@@ -19,6 +20,7 @@ class Listen(object):
         """
         Initializes a Listen instance.
         """
+        self._directives = []
         self.ip = kwargs.get("ip", "0.0.0.0")
         self.port = kwargs.get("port", 80)
         self._server_names = []
@@ -58,11 +60,48 @@ class Listen(object):
 
 
     @property
+    def directives(self):
+        """
+        Returns the directives associated to this Listen object.
+        """
+        return self._directives
+
+
+    @directives.setter
+    def directives(self, directive):
+        """
+        Adds a directive to the directives of the Listen object.
+        """
+        signature_regex =  compile("^\w+:[\w\.]+:\d+:[\w\.]+:[\w/]+$")
+
+        if directive is None:
+            raise ValueError("A directive name must be given.")
+        if not isinstance(directive, dict):
+            raise TypeError("The directive name must be a dictionary, not %s." % (type(directive)))
+        if 'signature' not in directive.keys():
+            raise ValueError("A directive is expected to have a 'signature'.")
+        if not isinstance(directive['signature'], str):
+            raise TypeError("The signature is expected as a string, not %s." % (type(directive['signature'])))
+        if not signature_regex.match(directive['signature']):
+            raise ValueError("A signature must have the following format: 'alias:ip:port:server_name:location'")
+        
+        if directive not in self._directives:
+            self._directives.append(directive)
+
+
+    @property
     def address(self):
         """
         Returns the address associated to the Listen object.
         """
         return "%s:%s" % (self.ip, self.port)
+
+
+    def resolve(self):
+        """
+        Resolve the input directives into a unique list of ServerName objects.
+        """
+        pass
 
 
     @property
