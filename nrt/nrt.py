@@ -67,7 +67,7 @@ class Nrt(object):
             raise TypeError("The signature is expected as a string, not %s." % (type(directive['signature'])))
         if not signature_regex.match(directive['signature']):
             raise ValueError("A signature must have the following format: 'alias:ip:port:server_name:location'")
-        
+
         if directive["signature"] not in [directive["signature"] for directive in self._directives]:
             self._directives.append(directive)
 
@@ -134,5 +134,7 @@ class Nrt(object):
                 self.listen = handle_listen
 
             self.listen[address].directives = directive
+
+            # Resolve in a cascade
 
         # Validate the Nrt (check the paper!)

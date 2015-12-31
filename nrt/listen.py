@@ -23,7 +23,7 @@ class Listen(object):
         self._directives = []
         self.ip = kwargs.get("ip", "0.0.0.0")
         self.port = kwargs.get("port", 80)
-        self._server_names = []
+        self._server_names = {}
 
         if not isinstance(self.port, str) and not isinstance(self.port, int):
             raise TypeError("The port is expected either as a string or an integer, not %s." % (type(self.port)))
@@ -84,7 +84,7 @@ class Listen(object):
             raise TypeError("The signature is expected as a string, not %s." % (type(directive['signature'])))
         if not signature_regex.match(directive['signature']):
             raise ValueError("A signature must have the following format: 'alias:ip:port:server_name:location'")
-        
+
         if directive not in self._directives:
             self._directives.append(directive)
 
@@ -101,7 +101,18 @@ class Listen(object):
         """
         Resolve the input directives into a unique list of ServerName objects.
         """
-        pass
+        # Generate ServerName objects
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if server_name not in [server_name.domain for server_name in self.server_names]:
+                handle_server_name = ServerName(**{
+                                                    "domain" : server_name,
+                                                    }
+                                                )
+                self.server_names = handle_server_name
+
+            self.server_names[server_name].directives = directive
 
 
     @property
@@ -121,6 +132,6 @@ class Listen(object):
             raise ValueError("A server name must be given.")
         if not isinstance(server_name, ServerName):
             raise TypeError("The server name must be a ServerName instance, not %s." % (type(server_name)))
-       
-        if server_name.domain not in [server_name.domain for server_name in self._server_names]:
-            self._server_names.append(server_name)
+
+        if server_name.domain not in self.server_names.keys():
+            self._server_names[server_name.domain] = server_name

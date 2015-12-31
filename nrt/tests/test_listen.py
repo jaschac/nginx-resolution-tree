@@ -53,7 +53,7 @@ class TestListen(TestBase):
         self.assertEqual(handle_listen.directives, [])
         self.assertEqual(handle_listen.ip, self.valid_ip)
         self.assertEqual(handle_listen.port, self.valid_port)
-        self.assertEqual(handle_listen.server_names, [])
+        self.assertEqual(handle_listen.server_names, {})
         del handle_listen
 
 
@@ -67,7 +67,7 @@ class TestListen(TestBase):
         self.assertEqual(handle_listen.directives, [])
         self.assertEqual(handle_listen.ip, "0.0.0.0")
         self.assertEqual(handle_listen.port, 80)
-        self.assertEqual(handle_listen.server_names, [])
+        self.assertEqual(handle_listen.server_names, {})
         del handle_listen
 
 
@@ -233,6 +233,7 @@ class TestListen(TestBase):
         self.assertEqual(len(handle_listen.directives), 1)
         self.assertEqual(directive, handle_listen.directives[0])
         del handle_listen
+        
 
     def test_directives_wrong_missing_directive(self):
         """
@@ -317,7 +318,7 @@ class TestListen(TestBase):
 
     def test_server_names_correct_empty(self):
         """
-        Tests that the server_names property properly returns a list of ServerName instances
+        Tests that the server_names property properly returns a map of ServerName instances
         associated to a Listen object.
         """
         handle_listen = Listen(**{
@@ -326,14 +327,14 @@ class TestListen(TestBase):
                                     }
                                 )
         response = handle_listen.server_names
-        expected_response = []
+        expected_response = {}
         self.assertEqual(response, expected_response)
         del handle_listen
 
 
     def test_server_names_correct(self):
         """
-        Tests that the server_names property properly returns a list of ServerName instances
+        Tests that the server_names property properly returns a map of ServerName instances
         associated to a Listen object.
         """
         handle_servername1 = self.aux_generate_handle_servername(**{"domain" : "www.servername1.com"})
@@ -348,7 +349,7 @@ class TestListen(TestBase):
 
         self.assertEqual(len(handle_listen.server_names), 2)
 
-        for server_name, expected_server_name in zip(handle_listen.server_names, [handle_servername1, handle_servername2]):
+        for server_name, expected_server_name in zip(sorted(handle_listen.server_names.values(), key = lambda x: x.domain), [handle_servername1, handle_servername2]):
             self.assertIsInstance(server_name, ServerName)
             self.assertEqual(server_name.domain, expected_server_name.domain)
 
@@ -359,10 +360,11 @@ class TestListen(TestBase):
 
     def test_server_names_correct_no_dupes(self):
         """
-        Tests that the server_names property properly returns a list of unique ServerName instances
+        Tests that the server_names property properly returns a map of unique ServerName instances
         associated to a Listen object.
         """
-        handle_servername = self.aux_generate_handle_servername(**{"domain" : "www.servername1.com"})
+        domain = "www.servername1.com"
+        handle_servername = self.aux_generate_handle_servername(**{"domain" : domain})
         handle_listen = Listen(**{
                                     "ip" : self.valid_ip,
                                     "port" : self.valid_port,
@@ -372,6 +374,7 @@ class TestListen(TestBase):
         handle_listen.server_names = handle_servername
         handle_listen.server_names = handle_servername
         self.assertEqual(len(handle_listen.server_names), 1)
+        self.assertEqual(list(handle_listen.server_names.keys())[0], domain)
         del handle_servername
         del handle_listen
 
