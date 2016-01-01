@@ -70,16 +70,16 @@ These signatures are turned into the following Resolution Tree by `nrt`:
             v                                           v                      v                                           v
 gunicorn1.lostinmalloc.com                gunicorn2.lostinmalloc.com    gunicorn1.lostinmalloc.com       gunicorn3.lostinmalloc.com
            +                                       +                               +                               +
-    +------+-----+                 +---------------+---+-------------+             |                               |
-    |            |                 |                   |             |             |                               |
-    |            |                 |                   |             |             |                               |
-    v            v                 v                   v             v             v                               v
-    /       /gunicorn1/            /                 /home/     /gunicorn2/        /                               /
-    +            +          +-------------+            +             +             +                               +
-    |            |          |             |            |             |             |                               |
-    |            |          |             |            |             |             |                               |
-    v            v          v             v            v             v             v                               v
-gunicorn1    gunicorn1  gunicorn2    gunicorn3     gunicorn1     gunicorn1     gunicorn1                       gunicorn3
+    +------+-----+                 +---------------+---+-------------+          +--+---------+                     |
+    |            |                 |                   |             |          |            |                     |
+    |            |                 |                   |             |          |            |                     |
+    v            v                 v                   v             v          v            v                     v
+    /       /gunicorn1/            /                 /home/     /gunicorn2/     /       /gunicorn1/                /
+    +            +          +-------------+            +             +          +            +                     +
+    |            |          |             |            |             |          |            |                     |
+    |            |          |             |            |             |          |            |                     |
+    v            v          v             v            v             v          v            v                     v
+gunicorn1    gunicorn1  gunicorn2    gunicorn3     gunicorn1     gunicorn1  gunicorn1    gunicorn1             gunicorn3
                                     (collision)
 ```
 Without considering the collision, `nginx-resolution-tree` would generate the following `server blocks`:
