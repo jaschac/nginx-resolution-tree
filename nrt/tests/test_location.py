@@ -25,77 +25,6 @@ class TestLocation(TestBase):
         self.valid_location = "/var/www/foo/"
 
 
-    def test_init_correct(self):
-        """
-        Tests that an Location object is properly instantiated if a proper location is passed in
-        during initialization. 
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.alias, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_root(self):
-        """
-        Tests that an Location object is properly instantiated if a root location, that is a simple
-        forward slash, is passed in during initialization.
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location_root
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location_root)
-        self.assertEqual(handle_location.alias, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_wrong_missing_location(self):
-        """
-        Tests that an Location object cannot be instantiated and a ValueError exception is raised
-        if the location is not passed.
-        """
-        self.assertRaises(
-                            ValueError,
-                            Location,
-                            **{}
-                            )
-
-
-    def test_init_wrong_mistyped_location(self):
-        """
-        Tests that an Location object cannot be instantiated and a TypeError exception is raised
-        if a location is passed in, but it's not a string.
-        """
-        self.assertRaises(
-                            TypeError,
-                            Location,
-                            **{
-                                "location" : 1234,
-                                }
-                            )
-
-
-    def test_init_wrong_misfromatted_location(self):
-        """
-        Tests that an Location object cannot be instantiated and a TypeError exception is raised
-        if a location is passed in as a string, but it does not have the required format.
-        """
-        for wrong_location in "/wrong", "wrong/", "", "wrong":
-            self.assertRaises(
-                                ValueError,
-                                Location,
-                                **{
-                                    "location" : wrong_location,
-                                    }
-                                )
-
-
     def test_alias_correct_multiple_times_the_same_alias(self):
         """
         Tests that if a Location object is passed multiple times the same alias, only one is
@@ -312,6 +241,77 @@ class TestLocation(TestBase):
                             {"signature" : "wrong_format"}
                             )
         del handle_location
+
+
+    def test_init_correct(self):
+        """
+        Tests that an Location object is properly instantiated if a proper location is passed in
+        during initialization. 
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.location, self.valid_location)
+        self.assertEqual(handle_location.alias, [])
+        self.assertFalse(handle_location.is_valid)
+        del handle_location
+
+
+    def test_init_correct_root(self):
+        """
+        Tests that an Location object is properly instantiated if a root location, that is a simple
+        forward slash, is passed in during initialization.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location_root
+                                        }
+                                    )
+        self.assertEqual(handle_location.location, self.valid_location_root)
+        self.assertEqual(handle_location.alias, [])
+        self.assertFalse(handle_location.is_valid)
+        del handle_location
+
+
+    def test_init_wrong_missing_location(self):
+        """
+        Tests that an Location object cannot be instantiated and a ValueError exception is raised
+        if the location is not passed.
+        """
+        self.assertRaises(
+                            ValueError,
+                            Location,
+                            **{}
+                            )
+
+
+    def test_init_wrong_mistyped_location(self):
+        """
+        Tests that an Location object cannot be instantiated and a TypeError exception is raised
+        if a location is passed in, but it's not a string.
+        """
+        self.assertRaises(
+                            TypeError,
+                            Location,
+                            **{
+                                "location" : 1234,
+                                }
+                            )
+
+
+    def test_init_wrong_misfromatted_location(self):
+        """
+        Tests that an Location object cannot be instantiated and a TypeError exception is raised
+        if a location is passed in as a string, but it does not have the required format.
+        """
+        for wrong_location in "/wrong", "wrong/", "", "wrong":
+            self.assertRaises(
+                                ValueError,
+                                Location,
+                                **{
+                                    "location" : wrong_location,
+                                    }
+                                )
 
 
     def test_is_valid_correct_one_alias(self):
