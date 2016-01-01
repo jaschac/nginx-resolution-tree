@@ -114,7 +114,7 @@ class Nrt(object):
 
     def resolve(self):
         """
-        Resolve the input directives into a unique list of Listen objects. If multiple directives
+        Resolves the input directives into a unique list of Listen objects. If multiple directives
         refer to the same Listen's address, only one is created and all the directives are stored
         there. The Listen object will, internally, take care to properly split them into proper
         ServerName objects.

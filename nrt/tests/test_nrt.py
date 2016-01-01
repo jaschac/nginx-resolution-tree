@@ -24,17 +24,6 @@ class TestNrt(TestBase):
                                     )
 
 
-    def test_init_correct(self):
-        """
-        Tests that an Nrt object is properly instantiated if its mandatory parameters are properly
-        passed in.
-        """
-        handle_nrt = Nrt(**{})
-        self.assertEqual(handle_nrt.directives, [])
-        self.assertEqual(handle_nrt.listen, {})
-        del handle_nrt
-
-
     def test_directives_correct(self):
         """
         Tests that an Nrt object properly returns the directives that were added to it.
@@ -171,6 +160,17 @@ class TestNrt(TestBase):
                             handle_nrt,
                             "export",
                             )
+        del handle_nrt
+
+
+    def test_init_correct(self):
+        """
+        Tests that an Nrt object is properly instantiated if its mandatory parameters are properly
+        passed in.
+        """
+        handle_nrt = Nrt(**{})
+        self.assertEqual(handle_nrt.directives, [])
+        self.assertEqual(handle_nrt.listen, {})
         del handle_nrt
 
 
