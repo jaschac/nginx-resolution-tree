@@ -217,15 +217,15 @@ In both cases we end up inside the root directory of the project, which has the 
 
 ```bash
 nginx-resolution-tree/
-├── [ 11K]  [ 11K]  LICENSE
+├── [ 11K]  LICENSE
 ├── [ 195]  MANIFEST.in
 ├── [ 583]  metadata.json
 ├── [4.0K]  nrt
 │   ├── [   0]  __init__.py
-│   ├── [2.9K]  listen.py
-│   ├── [2.5K]  location.py
-│   ├── [5.0K]  nrt.py
-│   ├── [2.4K]  servername.py
+│   ├── [4.8K]  listen.py
+│   ├── [4.1K]  location.py
+│   ├── [5.2K]  nrt.py
+│   ├── [4.1K]  servername.py
 │   └── [4.0K]  tests
 │       ├── [4.0K]  files
 │       │   ├── [   0]  listen.p
@@ -234,10 +234,10 @@ nginx-resolution-tree/
 │       │   └── [   0]  servername.p
 │       ├── [   0]  __init__.py
 │       ├── [1.9K]  test_base.py
-│       ├── [ 11K]  test_listen.py
-│       ├── [7.3K]  test_location.py
-│       ├── [9.2K]  test_nrt.py
-│       └── [6.6K]  test_servername.py
+│       ├── [ 17K]  test_listen.py
+│       ├── [ 15K]  test_location.py
+│       ├── [10.0K]  test_nrt.py
+│       └── [ 14K]  test_servername.py
 ├── [4.4K]  README
 ├── [ 15K]  README.md
 ├── [   0]  requirements
@@ -262,16 +262,16 @@ $ python setup.py install
 $ for module in listen location nrt servername; do python -m unittest nrt.tests.test_$module; done
 
 ----------------------------------------------------------------------
-Ran 24 tests in 0.006s
+Ran 26 tests in 0.006s
 OK
 ----------------------------------------------------------------------
-Ran 12 tests in 0.002s
+Ran 22 tests in 0.005s
 OK
 ----------------------------------------------------------------------
 Ran 18 tests in 0.004s
 OK
 ----------------------------------------------------------------------
-Ran 10 tests in 0.002s
+Ran 20 tests in 0.004s
 OK
 ```
 
