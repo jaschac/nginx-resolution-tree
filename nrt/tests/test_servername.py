@@ -24,80 +24,6 @@ class TestServerName(TestBase):
         self.valid_domain = "www.foo.boo"
 
 
-    def test_init_correct(self):
-        """
-        Tests that an ServerName object is properly instantiated if a proper location is passed in
-        during initialization. 
-        """
-        handle_servername = ServerName(**{
-                                            "domain" : self.valid_domain,
-                                        }
-                                    )
-        self.assertEqual(handle_servername.directives, [])
-        self.assertEqual(handle_servername.domain, self.valid_domain)
-        self.assertEqual(handle_servername.locations, {})
-        del handle_servername
-
-
-    def test_init_wrong_missing_domain(self):
-        """
-        Tests that a ServerName object cannot be instantiated and a ValueError exception is raised
-        if the location is not passed.
-        """
-        self.assertRaises(
-                            ValueError,
-                            ServerName,
-                            **{}
-                            )
-
-
-    def test_init_wrong_mistyped_domain(self):
-        """
-        Tests that an ServerName object cannot be instantiated and a TypeError exception is raised
-        if a domain is passed in, but it's not a string.
-        """
-        self.assertRaises(
-                            TypeError,
-                            ServerName,
-                            **{
-                                "domain" : 1234,
-                                }
-                            )
-
-
-    def test_init_wrong_empty_domain(self):
-        """
-        Tests that an ServerName object cannot be instantiated and a TypeError exception is raised
-        if a domain is passed in as an empty string.
-        """
-        self.assertRaises(
-                            ValueError,
-                            ServerName,
-                            **{
-                                "domain" : "",
-                                }
-                            )
-
-
-    def test_init_wrong_reassign_domain(self):
-        """
-        Tests that once instantiated, a ValueError exception is raised if the ServerName object is
-        assigned a domain again.
-        """
-        handle_servername = ServerName(**{
-                                            "domain" : self.valid_domain,
-                                        }
-                                    )
-        self.assertRaises(
-                            ValueError,
-                            setattr,
-                            handle_servername,
-                            "domain",
-                            "a_new_domain",
-                            )
-        del handle_servername
-
-
     def test_directives_correct(self):
         """
         Tests that a ServerName object properly returns the directives that were assigned to it.
@@ -259,6 +185,80 @@ class TestServerName(TestBase):
         del handle_servername
 
 
+    def test_init_correct(self):
+        """
+        Tests that an ServerName object is properly instantiated if a proper location is passed in
+        during initialization. 
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertEqual(handle_servername.directives, [])
+        self.assertEqual(handle_servername.domain, self.valid_domain)
+        self.assertEqual(handle_servername.locations, {})
+        del handle_servername
+
+
+    def test_init_wrong_missing_domain(self):
+        """
+        Tests that a ServerName object cannot be instantiated and a ValueError exception is raised
+        if the location is not passed.
+        """
+        self.assertRaises(
+                            ValueError,
+                            ServerName,
+                            **{}
+                            )
+
+
+    def test_init_wrong_mistyped_domain(self):
+        """
+        Tests that an ServerName object cannot be instantiated and a TypeError exception is raised
+        if a domain is passed in, but it's not a string.
+        """
+        self.assertRaises(
+                            TypeError,
+                            ServerName,
+                            **{
+                                "domain" : 1234,
+                                }
+                            )
+
+
+    def test_init_wrong_empty_domain(self):
+        """
+        Tests that an ServerName object cannot be instantiated and a TypeError exception is raised
+        if a domain is passed in as an empty string.
+        """
+        self.assertRaises(
+                            ValueError,
+                            ServerName,
+                            **{
+                                "domain" : "",
+                                }
+                            )
+
+
+    def test_init_wrong_reassign_domain(self):
+        """
+        Tests that once instantiated, a ValueError exception is raised if the ServerName object is
+        assigned a domain again.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_servername,
+                            "domain",
+                            "a_new_domain",
+                            )
+        del handle_servername
+
+
     def test_locations_wrong_missing_location(self):
         """
         Tests that a ValueError exception is raised if a location is added but no value is given.
@@ -333,4 +333,46 @@ class TestServerName(TestBase):
         handle_servername.locations = handle_location
         self.assertEqual(handle_servername.locations[location].location, location)
         del handle_location
+        del handle_servername
+
+
+    def test_resolve_correct(self):
+        """
+        Tests that the resolve method properly turns the directives into unique Location objects.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/that_place/"},
+                        ]
+        for directive in directives:
+            handle_servername.directives = directive
+        self.assertEqual(handle_servername.locations, {})
+        handle_servername.resolve()
+        self.assertEqual(len(handle_servername.locations.keys()), 2)
+        del handle_servername
+
+
+    def test_resolve_correct_no_dupes(self):
+        """
+        Tests that the resolve method properly generate a unique Location object if we try to
+        resolve the same location twice.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        location = "/"
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
+                        ]
+        for directive in directives:
+            handle_servername.directives = directive
+        handle_servername.resolve()
+        self.assertEqual(len(handle_servername.locations.keys()), 1)
+        self.assertEqual(list(handle_servername.locations.keys())[0], location)
         del handle_servername
