@@ -48,6 +48,7 @@ class Location(object):
             raise TypeError("The alias must be a string, not %s." % (type(alias)))
         if alias is "":
             raise ValueError("A empty string is not a valid alias.")
+        
         if alias not in self.alias:
             self._alias.append(alias)
 
@@ -111,5 +112,16 @@ class Location(object):
             raise ValueError("A empty string is not a valid location.")
         if not location[0] == location[-1] == "/":
             raise ValueError("The locations must start and end with a forward slash.")
-        
+
         self._location = location
+
+
+    def resolve(self, *args, **kwargs):
+        """
+        Resolve the input directives into a unique list of alias entries.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if alias not in self.alias:
+                self.alias = alias
