@@ -39,6 +39,143 @@ class TestListen(TestBase):
         return handle_servername
 
 
+    def test_address_correct(self):
+        """
+        Tests that the address property properly returns the address associated to a Listen object.
+        """
+        handle_listen = Listen(**{
+                                    "ip" : self.valid_ip,
+                                    "port" : self.valid_port,
+                                    }
+                                )
+        response = handle_listen.address
+        expected_response = "%s:%s" % (self.valid_ip, self.valid_port)
+        self.assertEqual(response, expected_response)
+        del handle_listen
+
+
+    def test_directives_correct(self):
+        """
+        Tests that a Listen object properly returns the directives that were assigned to it.
+        """
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"}
+                        ]
+        handle_listen = Listen(**{})
+        for directive in directives:
+            handle_listen.directives = directive
+        self.assertEqual(len(handle_listen.directives), 2)
+        for directive, expected_directive in zip(handle_listen.directives, directives):
+            self.assertEqual(directive, expected_directive)
+        del handle_listen
+
+
+    def test_directives_correct_empty(self):
+        """
+        Tests that a Listen object properly returns an empty list, if no directive was assigned to
+        it.
+        """
+        handle_listen = Listen(**{})
+        self.assertEqual(handle_listen.directives, [])
+        del handle_listen
+
+
+    def test_directives_correct_no_dupes(self):
+        """
+        Tests that a Listen object properly returns a unique directive if the same directive is
+        added multiple times.
+        """
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/"}
+        handle_listen = Listen(**{})
+        for i in range(10):
+            handle_listen.directives = directive
+        self.assertEqual(len(handle_listen.directives), 1)
+        self.assertEqual(directive, handle_listen.directives[0])
+        del handle_listen
+        
+
+    def test_directives_wrong_missing_directive(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but we don't pass any.
+        """
+        handle_listen = Listen(**{})
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_listen,
+                            "directives",
+                            None,
+                            )
+        del handle_listen
+
+
+    def test_directives_wrong_mistyped_directive(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in is not a dictionary.
+        """
+        handle_listen = Listen(**{})
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_listen,
+                            "directives",
+                            "not_a_dictionary",
+                            )
+        del handle_listen
+
+
+    def test_directives_wrong_missing_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in, despite being a dictionary, lacks the 'signature'
+        key.
+        """
+        handle_listen = Listen(**{})
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_listen,
+                            "directives",
+                            {"not_signature" : 124}
+                            )
+        del handle_listen
+
+
+    def test_directives_wrong_mistyped_signature(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that is not a string.
+        """
+        handle_listen = Listen(**{})
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_listen,
+                            "directives",
+                            {"signature" : 124}
+                            )
+        del handle_listen
+
+
+    def test_directives_wrong_misformatted_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that has a wrong format.
+        """
+        handle_listen = Listen(**{})
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_listen,
+                            "directives",
+                            {"signature" : "wrong_format"}
+                            )
+        del handle_listen
+
+
     def test_init_correct(self):
         """
         Tests that an Listen object is properly instantiated if proper parameters are passed in
@@ -175,143 +312,6 @@ class TestListen(TestBase):
                             **{
                                 "ip" : 12345,
                                 }
-                            )
-        del handle_listen
-
-
-    def test_address_correct(self):
-        """
-        Tests that the address property properly returns the address associated to a Listen object.
-        """
-        handle_listen = Listen(**{
-                                    "ip" : self.valid_ip,
-                                    "port" : self.valid_port,
-                                    }
-                                )
-        response = handle_listen.address
-        expected_response = "%s:%s" % (self.valid_ip, self.valid_port)
-        self.assertEqual(response, expected_response)
-        del handle_listen
-
-
-    def test_directives_correct(self):
-        """
-        Tests that a Listen object properly returns the directives that were assigned to it.
-        """
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
-                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"}
-                        ]
-        handle_listen = Listen(**{})
-        for directive in directives:
-            handle_listen.directives = directive
-        self.assertEqual(len(handle_listen.directives), 2)
-        for directive, expected_directive in zip(handle_listen.directives, directives):
-            self.assertEqual(directive, expected_directive)
-        del handle_listen
-
-
-    def test_directives_correct_empty(self):
-        """
-        Tests that a Listen object properly returns an empty list, if no directive was assigned to
-        it.
-        """
-        handle_listen = Listen(**{})
-        self.assertEqual(handle_listen.directives, [])
-        del handle_listen
-
-
-    def test_directives_correct_no_dupes(self):
-        """
-        Tests that a Listen object properly returns a unique directive if the same directive is
-        added multiple times.
-        """
-        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/"}
-        handle_listen = Listen(**{})
-        for i in range(10):
-            handle_listen.directives = directive
-        self.assertEqual(len(handle_listen.directives), 1)
-        self.assertEqual(directive, handle_listen.directives[0])
-        del handle_listen
-        
-
-    def test_directives_wrong_missing_directive(self):
-        """
-        Tests that a ValueError exception is raised if we try to add a directive to a Listen
-        object but we don't pass any.
-        """
-        handle_listen = Listen(**{})
-        self.assertRaises(
-                            ValueError,
-                            setattr,
-                            handle_listen,
-                            "directives",
-                            None,
-                            )
-        del handle_listen
-
-
-    def test_directives_wrong_mistyped_directive(self):
-        """
-        Tests that a TypeError exception is raised if we try to add a directive to a Listen
-        object but the directive passed in is not a dictionary.
-        """
-        handle_listen = Listen(**{})
-        self.assertRaises(
-                            TypeError,
-                            setattr,
-                            handle_listen,
-                            "directives",
-                            "not_a_dictionary",
-                            )
-        del handle_listen
-
-
-    def test_directives_wrong_missing_signature(self):
-        """
-        Tests that a ValueError exception is raised if we try to add a directive to a Listen
-        object but the directive passed in, despite being a dictionary, lacks the 'signature'
-        key.
-        """
-        handle_listen = Listen(**{})
-        self.assertRaises(
-                            ValueError,
-                            setattr,
-                            handle_listen,
-                            "directives",
-                            {"not_signature" : 124}
-                            )
-        del handle_listen
-
-
-    def test_directives_wrong_mistyped_signature(self):
-        """
-        Tests that a TypeError exception is raised if we try to add a directive to a Listen
-        object but the directive passed in has a signature that is not a string.
-        """
-        handle_listen = Listen(**{})
-        self.assertRaises(
-                            TypeError,
-                            setattr,
-                            handle_listen,
-                            "directives",
-                            {"signature" : 124}
-                            )
-        del handle_listen
-
-
-    def test_directives_wrong_misformatted_signature(self):
-        """
-        Tests that a ValueError exception is raised if we try to add a directive to a Listen
-        object but the directive passed in has a signature that has a wrong format.
-        """
-        handle_listen = Listen(**{})
-        self.assertRaises(
-                            ValueError,
-                            setattr,
-                            handle_listen,
-                            "directives",
-                            {"signature" : "wrong_format"}
                             )
         del handle_listen
 
