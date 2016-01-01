@@ -168,6 +168,152 @@ class TestLocation(TestBase):
         del handle_location
 
 
+    def test_directives_correct(self):
+        """
+        Tests that a Location object properly returns the directives that were assigned to it.
+        """
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"}
+                        ]
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        for directive in directives:
+            handle_location.directives = directive
+        self.assertEqual(len(handle_location.directives), 2)
+        for directive, expected_directive in zip(handle_location.directives, directives):
+            self.assertEqual(directive, expected_directive)
+        del handle_location
+
+
+    def test_directives_correct_empty(self):
+        """
+        Tests that a Location object properly returns an empty list, if no directive was
+        assigned to it.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.directives, [])
+        del handle_location
+
+
+    def test_directives_correct_no_dupes(self):
+        """
+        Tests that a Location object properly returns a unique directive if the same directive
+        is added multiple times.
+        """
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/"}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        for i in range(10):
+            handle_location.directives = directive
+        self.assertEqual(len(handle_location.directives), 1)
+        self.assertEqual(directive, handle_location.directives[0])
+        del handle_location
+        
+
+    def test_directives_wrong_missing_directive(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a ServerName
+        object but we don't pass any.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            None,
+                            )
+        del handle_location
+
+
+    def test_directives_wrong_mistyped_directive(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in is not a dictionary.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            "not_a_dictionary",
+                            )
+        del handle_location
+
+
+    def test_directives_wrong_missing_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in, despite being a dictionary, lacks the 'signature'
+        key.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            {"not_signature" : 124}
+                            )
+        del handle_location
+
+
+    def test_directives_wrong_mistyped_signature(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that is not a string.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            {"signature" : 124}
+                            )
+        del handle_location
+
+
+    def test_directives_wrong_misformatted_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that has a wrong format.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            {"signature" : "wrong_format"}
+                            )
+        del handle_location
+
+
     def test_is_valid_correct_one_alias(self):
         """
         Tests that the is_valid property correctly returns True if the Location is assigned a

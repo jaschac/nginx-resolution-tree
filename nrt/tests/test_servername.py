@@ -33,8 +33,9 @@ class TestServerName(TestBase):
                                             "domain" : self.valid_domain,
                                         }
                                     )
+        self.assertEqual(handle_servername.directives, [])
         self.assertEqual(handle_servername.domain, self.valid_domain)
-        self.assertEqual(handle_servername.locations, [])
+        self.assertEqual(handle_servername.locations, {})
         del handle_servername
 
 
@@ -97,6 +98,152 @@ class TestServerName(TestBase):
         del handle_servername
 
 
+    def test_directives_correct(self):
+        """
+        Tests that a ServerName object properly returns the directives that were assigned to it.
+        """
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"}
+                        ]
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        for directive in directives:
+            handle_servername.directives = directive
+        self.assertEqual(len(handle_servername.directives), 2)
+        for directive, expected_directive in zip(handle_servername.directives, directives):
+            self.assertEqual(directive, expected_directive)
+        del handle_servername
+
+
+    def test_directives_correct_empty(self):
+        """
+        Tests that a ServerName object properly returns an empty list, if no directive was
+        assigned to it.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertEqual(handle_servername.directives, [])
+        del handle_servername
+
+
+    def test_directives_correct_no_dupes(self):
+        """
+        Tests that a ServerName object properly returns a unique directive if the same directive
+        is added multiple times.
+        """
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/"}
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        for i in range(10):
+            handle_servername.directives = directive
+        self.assertEqual(len(handle_servername.directives), 1)
+        self.assertEqual(directive, handle_servername.directives[0])
+        del handle_servername
+        
+
+    def test_directives_wrong_missing_directive(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a ServerName
+        object but we don't pass any.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_servername,
+                            "directives",
+                            None,
+                            )
+        del handle_servername
+
+
+    def test_directives_wrong_mistyped_directive(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in is not a dictionary.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_servername,
+                            "directives",
+                            "not_a_dictionary",
+                            )
+        del handle_servername
+
+
+    def test_directives_wrong_missing_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in, despite being a dictionary, lacks the 'signature'
+        key.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_servername,
+                            "directives",
+                            {"not_signature" : 124}
+                            )
+        del handle_servername
+
+
+    def test_directives_wrong_mistyped_signature(self):
+        """
+        Tests that a TypeError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that is not a string.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_servername,
+                            "directives",
+                            {"signature" : 124}
+                            )
+        del handle_servername
+
+
+    def test_directives_wrong_misformatted_signature(self):
+        """
+        Tests that a ValueError exception is raised if we try to add a directive to a Listen
+        object but the directive passed in has a signature that has a wrong format.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_servername,
+                            "directives",
+                            {"signature" : "wrong_format"}
+                            )
+        del handle_servername
+
+
     def test_domain_correct(self):
         """
         Tests that the domain can be properly retrieved once a ServerName object has been correctly
@@ -106,7 +253,9 @@ class TestServerName(TestBase):
                                             "domain" : self.valid_domain,
                                         }
                                     )
+        self.assertEqual(handle_servername.directives, [])
         self.assertEqual(handle_servername.domain, self.valid_domain)
+        self.assertEqual(handle_servername.locations, {})
         del handle_servername
 
 
@@ -164,7 +313,7 @@ class TestServerName(TestBase):
                                         )
             handle_servername.locations = handle_location
         self.assertEqual(len(handle_servername.locations), 1)
-        self.assertEqual(handle_servername.locations[0].location, location)
+        self.assertEqual(handle_servername.locations[location].location, location)
         del handle_servername
 
 
@@ -182,6 +331,6 @@ class TestServerName(TestBase):
                                         }
                                     )
         handle_servername.locations = handle_location
-        self.assertEqual(handle_servername.locations[0].location, location)
+        self.assertEqual(handle_servername.locations[location].location, location)
         del handle_location
         del handle_servername

@@ -105,7 +105,7 @@ class Listen(object):
         for directive in self.directives:
             alias, ip, port, server_name, location = directive["signature"].split(":")
 
-            if server_name not in [server_name.domain for server_name in self.server_names]:
+            if server_name not in self.server_names.keys():
                 handle_server_name = ServerName(**{
                                                     "domain" : server_name,
                                                     }

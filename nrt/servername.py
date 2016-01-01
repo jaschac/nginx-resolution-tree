@@ -10,6 +10,8 @@ to different Listen instances: despite having the same value, they are different
 Each ServerName has one to N unique Location objects associated to it.
 """
 
+from re import compile, match
+
 from nrt.location import Location
 
 
@@ -21,8 +23,39 @@ class ServerName(object):
         """
         Initializes a ServerName instance. 
         """
+        self._directives = []
         self.domain = kwargs.get("domain", None)
-        self.locations = None
+        self._locations = {}
+
+
+    @property
+    def directives(self):
+        """
+        Returns the directives associated to this ServerName object.
+        """
+        return self._directives
+
+
+    @directives.setter
+    def directives(self, directive):
+        """
+        Adds a directive to the directives of the ServerName object.
+        """
+        signature_regex =  compile("^\w+:[\w\.]+:\d+:[\w\.]+:[\w/]+$")
+
+        if directive is None:
+            raise ValueError("A directive name must be given.")
+        if not isinstance(directive, dict):
+            raise TypeError("The directive name must be a dictionary, not %s." % (type(directive)))
+        if 'signature' not in directive.keys():
+            raise ValueError("A directive is expected to have a 'signature'.")
+        if not isinstance(directive['signature'], str):
+            raise TypeError("The signature is expected as a string, not %s." % (type(directive['signature'])))
+        if not signature_regex.match(directive['signature']):
+            raise ValueError("A signature must have the following format: 'alias:ip:port:server_name:location'")
+
+        if directive not in self._directives:
+            self._directives.append(directive)
 
 
     @property
@@ -55,21 +88,34 @@ class ServerName(object):
         Returns the locations associated to the ServerName.
         """
         return self._locations
-    
+
 
     @locations.setter
-    def locations(self, value):
+    def locations(self, location):
         """
         Adds an Location instance to those associated to the ServerName.
         """
-        if not hasattr(self, "_locations"):
-            self._locations = []
-        elif hasattr(self, "_locations"):
-            if value is None:
-                raise ValueError("A location must be given.")
-            if not isinstance(value, Location):
-                raise TypeError("The location must be a Location instance, not %s." % (type(value)))
-            if value.location not in [location.location for location in self._locations]:
-                self._locations.append(value)
-        else:
-            print("This should never happen")
+        if location is None:
+            raise ValueError("A location must be given.")
+        if not isinstance(location, Location):
+            raise TypeError("The location must be a Location instance, not %s." % (type(location)))
+
+        if location.location not in self._locations.keys():
+            self._locations[location.location] = location
+
+
+    def resolve(self, *args, **kwargs):
+        """
+        Resolve the input directives into a unique list of Location objects.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if location not in self.locations.keys():
+                handle_location = Location(**{
+                                                "location" : location,
+                                                }
+                                            )
+                self.locations = handle_location
+
+            self.locations[location].directives = directive
