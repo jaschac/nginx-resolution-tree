@@ -288,7 +288,7 @@ class TestListen(TestBase):
 
     def test_is_valid_correct_invalid_location(self):
         """
-        Tests that the is_valid property correctly returns False if any of its Locations is
+        Tests that the is_valid property correctly returns False if any of its ServerNames is
         invalid.
         """
         directives = [
