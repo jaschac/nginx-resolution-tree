@@ -275,13 +275,15 @@ class TestServerName(TestBase):
         for directive in directives:
             handle_servername.directives = directive
         handle_servername.resolve()
-        self.assertFalse(handle_servername.is_valid)
+        for location in handle_servername.locations.values():
+            location.resolve()
+        self.assertTrue(handle_servername.is_valid)
         del handle_servername
 
 
     def test_is_valid_correct_invalid_location(self):
         """
-        Tests that the is_valid property correctly returns False if any of its Locations is
+        Tests that the is_valid property correctly returns False if any of its ServerName is
         invalid.
         """
         directives = [
