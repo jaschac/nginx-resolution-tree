@@ -84,10 +84,13 @@ class Nrt(object):
     @property
     def is_valid(self):
         """
-        Returns whether the Nrt's current status is valid or not. Only valid Nrts can be exported
-        to virtual host files.
+        Returns whether the Nrt's current status is valid or not. The Nrt is not valid if any of
+        its listen istances is not. Only valid Nrts can be exported to virtual host files.
         """
-        raise NotImplementedError
+        for listen in self.listen.values():
+            if not listen.is_valid:
+                return False
+        return True
 
 
     @property
@@ -134,7 +137,6 @@ class Nrt(object):
                 self.listen = handle_listen
 
             self.listen[address].directives = directive
-
-            # Resolve in a cascade
+            self.listen[address].resolve()
 
         # Validate the Nrt (check the paper!)

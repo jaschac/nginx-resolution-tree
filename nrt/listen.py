@@ -97,6 +97,18 @@ class Listen(object):
         return "%s:%s" % (self.ip, self.port)
 
 
+    @property
+    def is_valid(self):
+        """
+        Returns whether the Listen is valid or not. The Listen is not valid if any of its server
+        names is not.
+        """
+        for server_name in self.server_names.values():
+            if not server_name.is_valid:
+                return False
+        return True
+
+
     def resolve(self):
         """
         Resolve the input directives into a unique list of ServerName objects.
@@ -113,6 +125,7 @@ class Listen(object):
                 self.server_names = handle_server_name
 
             self.server_names[server_name].directives = directive
+            self.server_names[server_name].resolve()
 
 
     @property

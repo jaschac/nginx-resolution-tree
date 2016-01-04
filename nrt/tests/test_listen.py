@@ -265,6 +265,40 @@ class TestListen(TestBase):
                                 )
 
 
+    def test_is_valid_correct(self):
+        """
+        Tests that the is_valid property correctly returns True if all the ServerName objects
+        associated to a Listen instance are valid.
+        """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location2/"}
+                        ]
+        handle_listen = Listen(**{})
+        for directive in directives:
+            handle_listen.directives = directive
+        handle_listen.resolve()    
+        self.assertTrue(handle_listen.is_valid)
+        del handle_listen
+
+
+    def test_is_valid_correct_invalid_location(self):
+        """
+        Tests that the is_valid property correctly returns False if any of its ServerNames is
+        invalid.
+        """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container2:0.0.0.0:80:a.b.c:/location1/"}
+                        ]
+        handle_listen = Listen(**{})
+        for directive in directives:
+            handle_listen.directives = directive
+        handle_listen.resolve()    
+        self.assertFalse(handle_listen.is_valid)
+        del handle_listen
+
+
     def test_is_valid_ipv4_address_correct_valid_ip(self):
         """
         Tests that __is_valid_ipv4_address properly returns True if it is passed a valid IPv4.

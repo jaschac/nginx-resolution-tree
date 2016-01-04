@@ -174,17 +174,37 @@ class TestNrt(TestBase):
         del handle_nrt
 
 
-    def test_is_valid(self):
+    def test_is_valid_correct(self):
         """
-        Tests that the is_valid property hasn't been implemented, yet.
+        Tests that the is_valid property correctly returns True if all the ServerName objects
+        associated to a Listen instance are valid.
         """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location2/"}
+                        ]
         handle_nrt = Nrt(**{})
-        self.assertRaises(
-                            NotImplementedError,
-                            getattr,
-                            handle_nrt,
-                            "is_valid",
-                            )
+        for directive in directives:
+            handle_nrt.directives = directive
+        handle_nrt.resolve()
+        self.assertTrue(handle_nrt.is_valid)
+        del handle_nrt
+
+
+    def test_is_valid_correct_invalid_location(self):
+        """
+        Tests that the is_valid property correctly returns False if any of its Listen is
+        invalid.
+        """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container2:0.0.0.0:80:a.b.c:/location1/"}
+                        ]
+        handle_nrt = Nrt(**{})
+        for directive in directives:
+            handle_nrt.directives = directive
+        handle_nrt.resolve()
+        self.assertFalse(handle_nrt.is_valid)
         del handle_nrt
 
 

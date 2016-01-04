@@ -8,5 +8,5 @@
   "source": "git@github.com:jaschac/nginx-resolution-tree.git",
   "summary": "Nginx configuration resolution tree",
   "tags":["nginx"],
-  "version": "0.1.0"
+  "version": "0.1.2"
 }

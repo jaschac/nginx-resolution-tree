@@ -259,6 +259,46 @@ class TestServerName(TestBase):
         del handle_servername
 
 
+    def test_is_valid_correct(self):
+        """
+        Tests that the is_valid property correctly returns True if all the Location objects
+        associated to a ServerName are valid.
+        """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location2/"}
+                        ]
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        for directive in directives:
+            handle_servername.directives = directive
+        handle_servername.resolve()
+        self.assertTrue(handle_servername.is_valid)
+        del handle_servername
+
+
+    def test_is_valid_correct_invalid_location(self):
+        """
+        Tests that the is_valid property correctly returns False if any of its ServerName is
+        invalid.
+        """
+        directives = [
+                        { "signature" : "container1:0.0.0.0:80:a.b.c:/location1/"},
+                        { "signature" : "container2:0.0.0.0:80:a.b.c:/location1/"}
+                        ]
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        for directive in directives:
+            handle_servername.directives = directive
+        handle_servername.resolve()
+        self.assertFalse(handle_servername.is_valid)
+        del handle_servername
+
+
     def test_locations_wrong_missing_location(self):
         """
         Tests that a ValueError exception is raised if a location is added but no value is given.

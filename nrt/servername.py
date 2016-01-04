@@ -83,6 +83,18 @@ class ServerName(object):
 
 
     @property
+    def is_valid(self):
+        """
+        Returns whether the ServerName is valid or not. The ServerName is not valid if any of its
+        locations is not.
+        """
+        for location in self.locations.values():
+            if not location.is_valid:
+                return False
+        return True
+
+
+    @property
     def locations(self):
         """
         Returns the locations associated to the ServerName.
@@ -119,3 +131,4 @@ class ServerName(object):
                 self.locations = handle_location
 
             self.locations[location].directives = directive
+            self.locations[location].resolve()
