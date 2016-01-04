@@ -275,8 +275,6 @@ class TestServerName(TestBase):
         for directive in directives:
             handle_servername.directives = directive
         handle_servername.resolve()
-        for location in handle_servername.locations.values():
-            location.resolve()
         self.assertTrue(handle_servername.is_valid)
         del handle_servername
 

@@ -187,12 +187,6 @@ class TestNrt(TestBase):
         for directive in directives:
             handle_nrt.directives = directive
         handle_nrt.resolve()
-        for listen in handle_nrt.listen.values():
-            listen.resolve()
-            for server_name in listen.server_names.values():
-                server_name.resolve()
-                for location in server_name.locations.values():
-                    location.resolve()
         self.assertTrue(handle_nrt.is_valid)
         del handle_nrt
 
@@ -210,12 +204,6 @@ class TestNrt(TestBase):
         for directive in directives:
             handle_nrt.directives = directive
         handle_nrt.resolve()
-        for listen in handle_nrt.listen.values():
-            listen.resolve()
-            for server_name in listen.server_names.values():
-                server_name.resolve()
-                for location in server_name.locations.values():
-                    location.resolve()
         self.assertFalse(handle_nrt.is_valid)
         del handle_nrt
 

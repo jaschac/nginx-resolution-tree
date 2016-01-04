@@ -278,10 +278,6 @@ class TestListen(TestBase):
         for directive in directives:
             handle_listen.directives = directive
         handle_listen.resolve()    
-        for server_name in handle_listen.server_names.values():
-            server_name.resolve()
-            for location in server_name.locations.values():
-                location.resolve()
         self.assertTrue(handle_listen.is_valid)
         del handle_listen
 
@@ -299,10 +295,6 @@ class TestListen(TestBase):
         for directive in directives:
             handle_listen.directives = directive
         handle_listen.resolve()    
-        for server_name in handle_listen.server_names.values():
-            server_name.resolve()
-            for location in server_name.locations.values():
-                location.resolve()
         self.assertFalse(handle_listen.is_valid)
         del handle_listen
 
