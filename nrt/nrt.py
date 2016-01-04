@@ -137,7 +137,6 @@ class Nrt(object):
                 self.listen = handle_listen
 
             self.listen[address].directives = directive
-
-            # Resolve in a cascade
+            self.listen[address].resolve()
 
         # Validate the Nrt (check the paper!)

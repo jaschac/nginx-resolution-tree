@@ -125,6 +125,7 @@ class Listen(object):
                 self.server_names = handle_server_name
 
             self.server_names[server_name].directives = directive
+            self.server_names[server_name].resolve()
 
 
     @property

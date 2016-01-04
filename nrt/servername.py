@@ -131,3 +131,4 @@ class ServerName(object):
                 self.locations = handle_location
 
             self.locations[location].directives = directive
+            self.locations[location].resolve()
