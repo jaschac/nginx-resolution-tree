@@ -42,6 +42,29 @@ class Nrt(object):
         self._listen = {}
 
 
+    def _build(self):
+        """
+        Turns the input directives into a unique list of Listen objects. If multiple directives
+        refer to the same Listen's address, only one is created and all the directives are stored
+        there. The Listen object will, internally, take care to properly split them into proper
+        ServerName objects.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+            address = "%s:%s" % (ip, port)
+
+            if address not in self._listen.keys():
+                handle_listen = Listen(**{
+                                            "ip" : ip,
+                                            "port" : port,
+                                            }
+                                        )
+                self.listen = handle_listen
+
+            self.listen[address].directives = directive
+            self.listen[address]._build()
+
+
     @property
     def directives(self, *args, **kwargs):
         """
@@ -113,30 +136,3 @@ class Nrt(object):
         
         if listen.address not in self._listen.keys():
             self._listen[listen.address] = listen
-
-
-    def resolve(self):
-        """
-        Resolves the input directives into a unique list of Listen objects. If multiple directives
-        refer to the same Listen's address, only one is created and all the directives are stored
-        there. The Listen object will, internally, take care to properly split them into proper
-        ServerName objects.
-        """
-
-        # Generate Listen objects
-        for directive in self.directives:
-            alias, ip, port, server_name, location = directive["signature"].split(":")
-            address = "%s:%s" % (ip, port)
-
-            if address not in self._listen.keys():
-                handle_listen = Listen(**{
-                                            "ip" : ip,
-                                            "port" : port,
-                                            }
-                                        )
-                self.listen = handle_listen
-
-            self.listen[address].directives = directive
-            self.listen[address].resolve()
-
-        # Validate the Nrt (check the paper!)
