@@ -46,7 +46,7 @@ In order to show how `nrt` works, let's get through an example. Let imagine we h
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/gunicorn1/
 gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/
-gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/gunicorn1/
+gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/hello/
 gunicorn2:0.0.0.0:80:gunicorn2.lostinmalloc.com:/
 gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/ # collision
 gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/gunicorn2/
@@ -74,7 +74,7 @@ gunicorn1.lostinmalloc.com                gunicorn2.lostinmalloc.com    gunicorn
     |            |                 |                   |             |          |            |                     |
     |            |                 |                   |             |          |            |                     |
     v            v                 v                   v             v          v            v                     v
-    /       /gunicorn1/            /                 /home/     /gunicorn2/     /       /gunicorn1/                /
+    /       /gunicorn1/            /                 /home/     /gunicorn2/     /       /hello/                    /
     +            +          +-------------+            +             +          +            +                     +
     |            |          |             |            |             |          |            |                     |
     |            |          |             |            |             |          |            |                     |
@@ -85,16 +85,22 @@ gunicorn1    gunicorn1  gunicorn2    gunicorn3     gunicorn1     gunicorn1  guni
 Without considering the collision, `nginx-resolution-tree` would generate the following `server blocks`:
 
  - gunicorn1.lostinmalloc.com
-   - listen 80
+   - listen 0.0.0.0:80
      - 2 locations
-   - listen 8080
-     - 1 location
+ - gunicorn1.lostinmalloc.com
+   - listen 0.0.0.0:8080
+     - 2 locations
  - gunicorn2.lostinmalloc.com
-   - listen 80
+   - listen 0.0.0.0:80
      - 3 locations
  - gunicorn3.lostinmalloc.com
-   - listen 8080
+   - listen 0.0.0.0:8080
      - 1 location
+
+This resolution means that:
+
+  - The `gunicorn1.lostinmalloc.com:80/gunicorn1/` URL is only accessible conneting to `gunicorn1.lostinmalloc.com` through port `80`.
+  - The `gunicorn1.lostinmalloc.com:80/hello/` URL is only accessible conneting to `gunicorn1.lostinmalloc.com` through port `8080`.
 
 ## Features
 `nginx-resolution-tree` is oriented to solve a very specific problem. As such it offer features aimed specifically at it, and nothing else.
