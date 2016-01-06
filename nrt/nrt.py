@@ -138,3 +138,21 @@ class Nrt(object):
         
         if listen.address not in self._listen.keys():
             self._listen[listen.address] = listen
+
+
+    def resolve(self):
+        """
+        Resolves the NRT into proper Nginx blocks.
+        """
+        if not self.is_valid:
+            raise SystemError("The NRT is not valid!")
+
+        for listening_address, listen_object in self.listen.items():
+            for server_name, server_object in listen_object.server_names.items():
+                print("Server Block")
+                print("%s\t%s" % (listening_address, server_name))
+                for location, location_object in server_object.locations.items():
+                    print("\tLocation Block")
+                    print("\t%s\tserved by container %s" % (location, ', '.join(location_object.alias)))
+                    print("\n")
+                print("\n")
