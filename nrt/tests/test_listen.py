@@ -54,6 +54,36 @@ class TestListen(TestBase):
         del handle_listen
 
 
+    def test_build_correct(self):
+        """
+        Tests that the _build method properly turns the directives into unique ServerName objects.
+        """
+        handle_listen = Listen(**{})
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
+                        { "signature" : "a:0.0.0.0:8080:aa.bb.cc.dd:/"},
+                        ]
+        for directive in directives:
+            handle_listen.directives = directive
+        self.assertEqual(len(handle_listen.server_names.keys()), 2)
+        del handle_listen
+
+
+    def test_build_correct_no_dupes(self):
+        """
+        Tests that the _build method properly generate a unique ServerName object if we try to
+        resolve the same server name twice.
+        """
+        handle_listen = Listen(**{})
+        server_name = "a.b.c.d"
+        directive = {"signature" : "a:0.0.0.0:80:%s:/" % (server_name)}
+        for _ in range(10):
+            handle_listen.directives = directive
+        self.assertEqual(len(handle_listen.server_names.keys()), 1)
+        self.assertEqual(list(handle_listen.server_names.keys())[0], server_name)
+        del handle_listen
+
+
     def test_directives_correct(self):
         """
         Tests that a Listen object properly returns the directives that were assigned to it.
@@ -276,8 +306,7 @@ class TestListen(TestBase):
                         ]
         handle_listen = Listen(**{})
         for directive in directives:
-            handle_listen.directives = directive
-        handle_listen.resolve()    
+            handle_listen.directives = directive  
         self.assertTrue(handle_listen.is_valid)
         del handle_listen
 
@@ -293,8 +322,7 @@ class TestListen(TestBase):
                         ]
         handle_listen = Listen(**{})
         for directive in directives:
-            handle_listen.directives = directive
-        handle_listen.resolve()    
+            handle_listen.directives = directive  
         self.assertFalse(handle_listen.is_valid)
         del handle_listen
 
@@ -347,39 +375,6 @@ class TestListen(TestBase):
                                 "ip" : 12345,
                                 }
                             )
-        del handle_listen
-
-
-    def test_resolve_correct(self):
-        """
-        Tests that the resolve method properly turns the directives into unique ServerName objects.
-        """
-        handle_listen = Listen(**{})
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
-                        { "signature" : "a:0.0.0.0:8080:aa.bb.cc.dd:/"},
-                        ]
-        for directive in directives:
-            handle_listen.directives = directive
-        self.assertEqual(handle_listen.server_names, {})
-        handle_listen.resolve()
-        self.assertEqual(len(handle_listen.server_names.keys()), 2)
-        del handle_listen
-
-
-    def test_resolve_correct_no_dupes(self):
-        """
-        Tests that the resolve method properly generate a unique ServerName object if we try to
-        resolve the same server name twice.
-        """
-        handle_listen = Listen(**{})
-        server_name = "a.b.c.d"
-        directive = {"signature" : "a:0.0.0.0:80:%s:/" % (server_name)}
-        for _ in range(10):
-            handle_listen.directives = directive
-        handle_listen.resolve()
-        self.assertEqual(len(handle_listen.server_names.keys()), 1)
-        self.assertEqual(list(handle_listen.server_names.keys())[0], server_name)
         del handle_listen
 
 

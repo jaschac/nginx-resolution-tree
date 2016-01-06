@@ -24,6 +24,40 @@ class TestNrt(TestBase):
                                     )
 
 
+    def test_build_correct(self):
+        """
+        Tests that the _build method properly turns the directives into unique Listen objects.
+        """
+        handle_nrt = Nrt(**{})
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
+                        ]
+        for directive in directives:
+            handle_nrt.directives = directive
+        self.assertEqual(len(handle_nrt.listen.keys()), 2)
+        del handle_nrt
+
+
+    def test_build_correct_no_dupes(self):
+        """
+        Tests that the _build method properly generate a unique Listen object if we try to resolve
+        the same address twice but the directives per se are different.
+        """
+        handle_nrt = Nrt(**{})
+        address = "0.0.0.0:80"
+        directives = [
+                        { "signature" : "a:%s:a.b.c:/" % (address)},
+                        { "signature" : "a:%s:aa.bb.cc:/" % (address)},
+                        ]
+        for directive in directives:
+            handle_nrt.directives = directive
+        self.assertEqual(len(handle_nrt.listen.keys()), 1)
+        self.assertEqual(list(handle_nrt.listen.keys())[0], address)
+        del handle_nrt
+
+
     def test_directives_correct(self):
         """
         Tests that an Nrt object properly returns the directives that were added to it.
@@ -186,7 +220,6 @@ class TestNrt(TestBase):
         handle_nrt = Nrt(**{})
         for directive in directives:
             handle_nrt.directives = directive
-        handle_nrt.resolve()
         self.assertTrue(handle_nrt.is_valid)
         del handle_nrt
 
@@ -203,7 +236,6 @@ class TestNrt(TestBase):
         handle_nrt = Nrt(**{})
         for directive in directives:
             handle_nrt.directives = directive
-        handle_nrt.resolve()
         self.assertFalse(handle_nrt.is_valid)
         del handle_nrt
 
@@ -287,41 +319,4 @@ class TestNrt(TestBase):
                             "listen",
                             "not_an_instance_of_Listen"
                             )
-        del handle_nrt
-
-
-    def test_resolve_correct(self):
-        """
-        Tests that the resolve method properly turns the directives into unique Listen objects.
-        """
-        handle_nrt = Nrt(**{})
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
-                        { "signature" : "a:0.0.0.0:8080:a.b.c:/"},
-                        { "signature" : "a:0.0.0.0:80:a.b.c:/"},
-                        ]
-        for directive in directives:
-            handle_nrt.directives = directive
-        self.assertEqual(handle_nrt.listen, {})
-        handle_nrt.resolve()
-        self.assertEqual(len(handle_nrt.listen.keys()), 2)
-        del handle_nrt
-
-
-    def test_resolve_correct_no_dupes(self):
-        """
-        Tests that the resolve method properly generate a unique Listen object if we try to resolve
-        the same address twice but the directives per se are different.
-        """
-        handle_nrt = Nrt(**{})
-        address = "0.0.0.0:80"
-        directives = [
-                        { "signature" : "a:%s:a.b.c:/" % (address)},
-                        { "signature" : "a:%s:aa.bb.cc:/" % (address)},
-                        ]
-        for directive in directives:
-            handle_nrt.directives = directive
-        handle_nrt.resolve()
-        self.assertEqual(len(handle_nrt.listen.keys()), 1)
-        self.assertEqual(list(handle_nrt.listen.keys())[0], address)
         del handle_nrt

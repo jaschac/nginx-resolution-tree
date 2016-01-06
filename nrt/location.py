@@ -29,6 +29,17 @@ class Location(object):
         self.location = kwargs.get("location", None)
 
 
+    def _build(self, *args, **kwargs):
+        """
+        Turns the input directives into a unique list of alias entries.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if alias not in self.alias:
+                self.alias = alias
+
+
     @property
     def alias(self):
         """
@@ -82,6 +93,8 @@ class Location(object):
         if directive not in self._directives:
             self._directives.append(directive)
 
+        self._build()
+
 
     @property
     def is_valid(self):
@@ -114,14 +127,3 @@ class Location(object):
             raise ValueError("The locations must start and end with a forward slash.")
 
         self._location = location
-
-
-    def resolve(self, *args, **kwargs):
-        """
-        Resolve the input directives into a unique list of alias entries.
-        """
-        for directive in self.directives:
-            alias, ip, port, server_name, location = directive["signature"].split(":")
-
-            if alias not in self.alias:
-                self.alias = alias

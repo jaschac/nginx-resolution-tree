@@ -97,6 +97,45 @@ class TestLocation(TestBase):
         del handle_location
 
 
+    def test_build_correct(self):
+        """
+        Tests that the _build method properly turns the directives into unique alias entries.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
+                        { "signature" : "b:0.0.0.0:80:a.b.c.d:/"},
+                        ]
+        for directive in directives:
+            handle_location.directives = directive
+        self.assertEqual(len(handle_location.alias), 2)
+        del handle_location
+
+
+    def test_build_correct_no_dupes(self):
+        """
+        Tests that the _build method properly generates a unique alias if provided with the same
+        alias twice.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        alias = "this_container"
+        directives = [
+                        { "signature" : "%s:0.0.0.0:80:a.b.c.d:/" % (alias)},
+                        { "signature" : "%s:0.0.0.0:80:a.b.c.d:/" % (alias)},
+                        ]
+        for directive in directives:
+            handle_location.directives = directive
+        self.assertEqual(len(handle_location.alias), 1)
+        self.assertEqual(list(handle_location.alias)[0], alias)
+        del handle_location
+
+
     def test_directives_correct(self):
         """
         Tests that a Location object properly returns the directives that were assigned to it.
@@ -353,46 +392,4 @@ class TestLocation(TestBase):
         handle_location.alias = "foo1"
         handle_location.alias = "foo2"
         self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_resolve_correct(self):
-        """
-        Tests that the resolve method properly turns the directives into unique alias entries.
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
-                        { "signature" : "b:0.0.0.0:80:a.b.c.d:/"},
-                        ]
-        for directive in directives:
-            handle_location.directives = directive
-        self.assertEqual(handle_location.alias, [])
-        handle_location.resolve()
-        self.assertEqual(len(handle_location.alias), 2)
-        del handle_location
-
-
-    def test_resolve_correct_no_dupes(self):
-        """
-        Tests that the resolve method properly generates a unique alias resolve the same alias
-        twice.
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        alias = "this_container"
-        directives = [
-                        { "signature" : "%s:0.0.0.0:80:a.b.c.d:/" % (alias)},
-                        { "signature" : "%s:0.0.0.0:80:a.b.c.d:/" % (alias)},
-                        ]
-        for directive in directives:
-            handle_location.directives = directive
-        handle_location.resolve()
-        self.assertEqual(len(handle_location.alias), 1)
-        self.assertEqual(list(handle_location.alias)[0], alias)
         del handle_location
