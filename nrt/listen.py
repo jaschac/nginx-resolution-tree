@@ -59,6 +59,24 @@ class Listen(object):
         return True
 
 
+    def _build(self):
+        """
+        Turns the input directives into a unique list of ServerName objects.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if server_name not in self.server_names.keys():
+                handle_server_name = ServerName(**{
+                                                    "domain" : server_name,
+                                                    }
+                                                )
+                self.server_names = handle_server_name
+
+            self.server_names[server_name].directives = directive
+            self.server_names[server_name]._build()
+
+
     @property
     def directives(self):
         """
@@ -107,25 +125,6 @@ class Listen(object):
             if not server_name.is_valid:
                 return False
         return True
-
-
-    def resolve(self):
-        """
-        Resolve the input directives into a unique list of ServerName objects.
-        """
-        # Generate ServerName objects
-        for directive in self.directives:
-            alias, ip, port, server_name, location = directive["signature"].split(":")
-
-            if server_name not in self.server_names.keys():
-                handle_server_name = ServerName(**{
-                                                    "domain" : server_name,
-                                                    }
-                                                )
-                self.server_names = handle_server_name
-
-            self.server_names[server_name].directives = directive
-            self.server_names[server_name].resolve()
 
 
     @property

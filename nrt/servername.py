@@ -28,6 +28,24 @@ class ServerName(object):
         self._locations = {}
 
 
+    def _build(self, *args, **kwargs):
+        """
+        Turns the input directives into a unique list of Location objects.
+        """
+        for directive in self.directives:
+            alias, ip, port, server_name, location = directive["signature"].split(":")
+
+            if location not in self.locations.keys():
+                handle_location = Location(**{
+                                                "location" : location,
+                                                }
+                                            )
+                self.locations = handle_location
+
+            self.locations[location].directives = directive
+            self.locations[location]._build()
+
+
     @property
     def directives(self):
         """
@@ -114,21 +132,3 @@ class ServerName(object):
 
         if location.location not in self._locations.keys():
             self._locations[location.location] = location
-
-
-    def resolve(self, *args, **kwargs):
-        """
-        Resolve the input directives into a unique list of Location objects.
-        """
-        for directive in self.directives:
-            alias, ip, port, server_name, location = directive["signature"].split(":")
-
-            if location not in self.locations.keys():
-                handle_location = Location(**{
-                                                "location" : location,
-                                                }
-                                            )
-                self.locations = handle_location
-
-            self.locations[location].directives = directive
-            self.locations[location].resolve()

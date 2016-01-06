@@ -24,6 +24,48 @@ class TestServerName(TestBase):
         self.valid_domain = "www.foo.boo"
 
 
+    def test_build_correct(self):
+        """
+        Tests that the _build method properly turns the directives into unique Location objects.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/that_place/"},
+                        ]
+        for directive in directives:
+            handle_servername.directives = directive
+        self.assertEqual(handle_servername.locations, {})
+        handle_servername._build()
+        self.assertEqual(len(handle_servername.locations.keys()), 2)
+        del handle_servername
+
+
+    def test_build_correct_no_dupes(self):
+        """
+        Tests that the _build method properly generate a unique Location object if we try to
+        resolve the same location twice.
+        """
+        handle_servername = ServerName(**{
+                                            "domain" : self.valid_domain,
+                                        }
+                                    )
+        location = "/"
+        directives = [
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
+                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
+                        ]
+        for directive in directives:
+            handle_servername.directives = directive
+        handle_servername._build()
+        self.assertEqual(len(handle_servername.locations.keys()), 1)
+        self.assertEqual(list(handle_servername.locations.keys())[0], location)
+        del handle_servername
+
+
     def test_directives_correct(self):
         """
         Tests that a ServerName object properly returns the directives that were assigned to it.
@@ -274,7 +316,7 @@ class TestServerName(TestBase):
                                     )
         for directive in directives:
             handle_servername.directives = directive
-        handle_servername.resolve()
+        handle_servername._build()
         self.assertTrue(handle_servername.is_valid)
         del handle_servername
 
@@ -294,7 +336,7 @@ class TestServerName(TestBase):
                                     )
         for directive in directives:
             handle_servername.directives = directive
-        handle_servername.resolve()
+        handle_servername._build()
         self.assertFalse(handle_servername.is_valid)
         del handle_servername
 
@@ -373,46 +415,4 @@ class TestServerName(TestBase):
         handle_servername.locations = handle_location
         self.assertEqual(handle_servername.locations[location].location, location)
         del handle_location
-        del handle_servername
-
-
-    def test_resolve_correct(self):
-        """
-        Tests that the resolve method properly turns the directives into unique Location objects.
-        """
-        handle_servername = ServerName(**{
-                                            "domain" : self.valid_domain,
-                                        }
-                                    )
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/"},
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:/that_place/"},
-                        ]
-        for directive in directives:
-            handle_servername.directives = directive
-        self.assertEqual(handle_servername.locations, {})
-        handle_servername.resolve()
-        self.assertEqual(len(handle_servername.locations.keys()), 2)
-        del handle_servername
-
-
-    def test_resolve_correct_no_dupes(self):
-        """
-        Tests that the resolve method properly generate a unique Location object if we try to
-        resolve the same location twice.
-        """
-        handle_servername = ServerName(**{
-                                            "domain" : self.valid_domain,
-                                        }
-                                    )
-        location = "/"
-        directives = [
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
-                        { "signature" : "a:0.0.0.0:80:a.b.c.d:%s" % (location)},
-                        ]
-        for directive in directives:
-            handle_servername.directives = directive
-        handle_servername.resolve()
-        self.assertEqual(len(handle_servername.locations.keys()), 1)
-        self.assertEqual(list(handle_servername.locations.keys())[0], location)
         del handle_servername
