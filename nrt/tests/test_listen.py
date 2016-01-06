@@ -65,8 +65,6 @@ class TestListen(TestBase):
                         ]
         for directive in directives:
             handle_listen.directives = directive
-        self.assertEqual(handle_listen.server_names, {})
-        handle_listen._build()
         self.assertEqual(len(handle_listen.server_names.keys()), 2)
         del handle_listen
 
@@ -81,7 +79,6 @@ class TestListen(TestBase):
         directive = {"signature" : "a:0.0.0.0:80:%s:/" % (server_name)}
         for _ in range(10):
             handle_listen.directives = directive
-        handle_listen._build()
         self.assertEqual(len(handle_listen.server_names.keys()), 1)
         self.assertEqual(list(handle_listen.server_names.keys())[0], server_name)
         del handle_listen
@@ -309,8 +306,7 @@ class TestListen(TestBase):
                         ]
         handle_listen = Listen(**{})
         for directive in directives:
-            handle_listen.directives = directive
-        handle_listen._build()    
+            handle_listen.directives = directive  
         self.assertTrue(handle_listen.is_valid)
         del handle_listen
 
@@ -326,8 +322,7 @@ class TestListen(TestBase):
                         ]
         handle_listen = Listen(**{})
         for directive in directives:
-            handle_listen.directives = directive
-        handle_listen._build()    
+            handle_listen.directives = directive  
         self.assertFalse(handle_listen.is_valid)
         del handle_listen
 

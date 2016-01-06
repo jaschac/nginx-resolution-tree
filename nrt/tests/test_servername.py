@@ -38,8 +38,6 @@ class TestServerName(TestBase):
                         ]
         for directive in directives:
             handle_servername.directives = directive
-        self.assertEqual(handle_servername.locations, {})
-        handle_servername._build()
         self.assertEqual(len(handle_servername.locations.keys()), 2)
         del handle_servername
 
@@ -60,7 +58,6 @@ class TestServerName(TestBase):
                         ]
         for directive in directives:
             handle_servername.directives = directive
-        handle_servername._build()
         self.assertEqual(len(handle_servername.locations.keys()), 1)
         self.assertEqual(list(handle_servername.locations.keys())[0], location)
         del handle_servername
@@ -316,7 +313,6 @@ class TestServerName(TestBase):
                                     )
         for directive in directives:
             handle_servername.directives = directive
-        handle_servername._build()
         self.assertTrue(handle_servername.is_valid)
         del handle_servername
 
@@ -336,7 +332,6 @@ class TestServerName(TestBase):
                                     )
         for directive in directives:
             handle_servername.directives = directive
-        handle_servername._build()
         self.assertFalse(handle_servername.is_valid)
         del handle_servername
 

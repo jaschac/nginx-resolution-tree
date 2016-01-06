@@ -93,6 +93,8 @@ class Location(object):
         if directive not in self._directives:
             self._directives.append(directive)
 
+        self._build()
+
 
     @property
     def is_valid(self):

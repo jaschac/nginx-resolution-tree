@@ -36,8 +36,6 @@ class TestNrt(TestBase):
                         ]
         for directive in directives:
             handle_nrt.directives = directive
-        self.assertEqual(handle_nrt.listen, {})
-        handle_nrt._build()
         self.assertEqual(len(handle_nrt.listen.keys()), 2)
         del handle_nrt
 
@@ -55,7 +53,6 @@ class TestNrt(TestBase):
                         ]
         for directive in directives:
             handle_nrt.directives = directive
-        handle_nrt._build()
         self.assertEqual(len(handle_nrt.listen.keys()), 1)
         self.assertEqual(list(handle_nrt.listen.keys())[0], address)
         del handle_nrt
@@ -223,7 +220,6 @@ class TestNrt(TestBase):
         handle_nrt = Nrt(**{})
         for directive in directives:
             handle_nrt.directives = directive
-        handle_nrt._build()
         self.assertTrue(handle_nrt.is_valid)
         del handle_nrt
 
@@ -240,7 +236,6 @@ class TestNrt(TestBase):
         handle_nrt = Nrt(**{})
         for directive in directives:
             handle_nrt.directives = directive
-        handle_nrt._build()
         self.assertFalse(handle_nrt.is_valid)
         del handle_nrt
 

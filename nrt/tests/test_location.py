@@ -111,8 +111,6 @@ class TestLocation(TestBase):
                         ]
         for directive in directives:
             handle_location.directives = directive
-        self.assertEqual(handle_location.alias, [])
-        handle_location._build()
         self.assertEqual(len(handle_location.alias), 2)
         del handle_location
 
@@ -133,7 +131,6 @@ class TestLocation(TestBase):
                         ]
         for directive in directives:
             handle_location.directives = directive
-        handle_location._build()
         self.assertEqual(len(handle_location.alias), 1)
         self.assertEqual(list(handle_location.alias)[0], alias)
         del handle_location

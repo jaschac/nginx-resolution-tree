@@ -94,6 +94,8 @@ class Nrt(object):
         if directive["signature"] not in [directive["signature"] for directive in self._directives]:
             self._directives.append(directive)
 
+        self._build()
+
 
     @property
     def export(self, *args, **kwargs):
