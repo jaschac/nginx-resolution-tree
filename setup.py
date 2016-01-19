@@ -11,6 +11,9 @@ setup(
     name = 'nginx-resolution-tree',
     packages =[
                 'nrt',
+                'nrt.blocks',
+                'nrt.blocks.location',
+                'nrt.blocks.server',
                 'nrt.tests',
                 ],
     scripts = [],
