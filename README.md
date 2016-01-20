@@ -46,7 +46,7 @@ In order to show how `nrt` works, let's get through an example. Let imagine we h
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/
 gunicorn1:0.0.0.0:80:gunicorn1.lostinmalloc.com:/gunicorn1/
 gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/
-gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/hello/
+gunicorn1:0.0.0.0:8080:gunicorn1.lostinmalloc.com:/gunicorn1/
 gunicorn2:0.0.0.0:80:gunicorn2.lostinmalloc.com:/
 gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/ # collision
 gunicorn3:0.0.0.0:80:gunicorn2.lostinmalloc.com:/gunicorn2/
@@ -74,7 +74,7 @@ gunicorn1.lostinmalloc.com                gunicorn2.lostinmalloc.com    gunicorn
     |            |                 |                   |             |          |            |                     |
     |            |                 |                   |             |          |            |                     |
     v            v                 v                   v             v          v            v                     v
-    /       /gunicorn1/            /                 /home/     /gunicorn2/     /       /hello/                    /
+    /       /gunicorn1/            /                 /home/     /gunicorn2/     /       /gunicorn1/                /
     +            +          +-------------+            +             +          +            +                     +
     |            |          |             |            |             |          |            |                     |
     |            |          |             |            |             |          |            |                     |
@@ -85,22 +85,16 @@ gunicorn1    gunicorn1  gunicorn2    gunicorn3     gunicorn1     gunicorn1  guni
 Without considering the collision, `nginx-resolution-tree` would generate the following `server blocks`:
 
  - gunicorn1.lostinmalloc.com
-   - listen 0.0.0.0:80
+   - listen 80
      - 2 locations
- - gunicorn1.lostinmalloc.com
-   - listen 0.0.0.0:8080
-     - 2 locations
+   - listen 8080
+     - 1 location
  - gunicorn2.lostinmalloc.com
-   - listen 0.0.0.0:80
+   - listen 80
      - 3 locations
  - gunicorn3.lostinmalloc.com
-   - listen 0.0.0.0:8080
+   - listen 8080
      - 1 location
-
-This resolution means that:
-
-  - The `gunicorn1.lostinmalloc.com:80/gunicorn1/` URL is only accessible conneting to `gunicorn1.lostinmalloc.com` through port `80`.
-  - The `gunicorn1.lostinmalloc.com:80/hello/` URL is only accessible conneting to `gunicorn1.lostinmalloc.com` through port `8080`.
 
 ## Features
 `nginx-resolution-tree` is oriented to solve a very specific problem. As such it offer features aimed specifically at it, and nothing else.
@@ -118,12 +112,63 @@ This resolution means that:
  - Guaranteeing the remote servers are ready to listen to the given ports.
 
 ## Reference
-The `nginx-resolution-tree` package is split into the following modules, each presenting a class named after it:
+The `nginx-resolution-tree` package is split into the following modules:
 
-  - `nrt`
+  - `blocks`
+    - `location`
+      - `base`
+      - `gunicorn`
+      - `phpfpm`
+    - `server`
   - `listen`
-  - `server_name`
   - `location`
+  - `nrt`
+  - `server_name`
+
+
+#### Blocks
+This module contains modules and classes that represent Nginx blocks.
+
+
+#### Blocks/Location
+This module contains modules and classes that represent Nginx location blocks.
+
+
+#### Blocks/Location/Base
+This module defines the `LocationBlock` class, which represents a basic Nginx location block. The location in this case is an exact string, and comes from a `Location` object of an NRT. By default it does not have anything else and, as Nginx does, enforces an `allow all` policy. Optionally the client can pass the `Location` specific `allow` and `deny` policies.
+
+
+#### Blocks/Location/Gunicorn
+This module defines the `GunicornLocationBlock` class, which is a subclass of the `LocationBlock` class. It expands it adding GUnicorn specific attributes. This subclass adds the `proxy_pass` directive to those added by the `LocationBlock` base class. GUnicorn defaults to `127.0.0.1:8000` unless specified otherwise, through optional parameters.
+
+
+#### Blocks/Location/Phpfpm
+This module defines the `PhpfpmLocationBlock` class, which is a subclass of the `LocationBlock` class. It expands it adding PHP-FPM specific attributes. It adds `fastcgi` entries that are specific to PHP-FPM. It also replaces the location being server with a regular expression that matches any .php file.
+
+
+#### Blocks/Server
+This module contains the `BlockServer` class, which represents an Nginx server block.
+
+
+#### Listen
+This module defines the `Listen` class, which represent a unique IP:port pair. This pair is usually
+referred to as the address. It defaults to 0.0.0.0:80 and it is only able to deal with IPv4
+addresses. Each `Listen` object is associated a list of unique server names.
+
+`Listen` objects are the first to be checked when a signature is resolved into an Nginx Resolution
+Tree.
+
+
+#### Location
+This module defines the `Location` class, which represent an Nginx's location block and its
+properties. Multiple location blocks can be present within the same server block, but they must be
+unique. Each instance of the `Location` class is identified by its name. The name of a location must
+start and end with a forward slash, with the unique exception of the root location, which is
+represented by a single forward slash.
+
+A `Location` is associated to a list of containers, referred to as `alias`. For an Nginx configuration
+file to be valid, multiple containers must not redefine the same location within the same server
+block.
 
 
 #### Nrt
@@ -149,14 +194,6 @@ generating any other component of the tree. Each level of the tree is indeed res
 generating its lower level, properly mapping those objects.
 
 
-#### Listen
-This module defines the `Listen` class, which represent a unique IP:port pair. This pair is usually
-referred to as the address. It defaults to 0.0.0.0:80 and it is only able to deal with IPv4
-addresses. Each `Listen` object is associated a list of unique server names.
-
-`Listen` objects are the first to be checked when a signature is resolved into an Nginx Resolution
-Tree.
-
 #### Server Name
 This module defines the `ServerName` class, which represents the server name that Nginx will try to
 match once the listen directive has been satisfied. The server name is very likely to be a domain
@@ -169,16 +206,6 @@ subdomains of the same domain are different `ServerName` objects, unless they ar
 through a regular expression. Each `ServerName` instance is also associated a list of `Location`
 objects.
 
-#### Location
-This module defines the `Location` class, which represent an Nginx's location block and its
-properties. Multiple location blocks can be present within the same server block, but they must be
-unique. Each instance of the `Location` class is identified by its name. The name of a location must
-start and end with a forward slash, with the unique exception of the root location, which is
-represented by a single forward slash.
-
-A `Location` is associated to a list of containers, referred to as `alias`. For an Nginx configuration
-file to be valid, multiple containers must not redefine the same location within the same server
-block.
 
 ## Setup
 `nrt` can be installed either through `pip` or by manually building it from the source. In both cases, the best scenario is to install it in a completely sandboxed [virtual environment](https://virtualenv.readthedocs.org/en/latest), which guarantees isolation from other projects and their dependencies. Note that in all cases, unless in a virtual environment, the install command needs to be executed as `sudo`.
@@ -267,19 +294,34 @@ $ python setup.py install
 ```bash
 $ for module in listen location nrt servername; do python -m unittest nrt.tests.test_$module; done
 
-----------------------------------------------------------------------
-Ran 26 tests in 0.006s
+Ran 28 tests in 0.009s
 OK
-----------------------------------------------------------------------
+
+Ran 22 tests in 0.004s
+OK
+
+Ran 19 tests in 0.005s
+OK
+
 Ran 22 tests in 0.005s
 OK
+```
+
+```bash
+Name                Stmts   Miss  Cover   Missing
+-------------------------------------------------   
+nrt/listen.py          76      6    92%   35, 52-56
+nrt/location.py        54      0   100%   
+nrt/nrt.py             50      0   100%   
+nrt/servername.py      58      0   100%   
+-------------------------------------------------
+TOTAL                 238      6    97%   
 ----------------------------------------------------------------------
-Ran 18 tests in 0.004s
-OK
-----------------------------------------------------------------------
-Ran 20 tests in 0.004s
+Ran 91 tests in 0.061s
 OK
 ```
+
+
 
 ## Limitations
 `nrt` has been developed and tested with the following scenarios. It is not guaranteed to work otherwise.
