@@ -24,7 +24,9 @@ class Location(object):
         """
         Initializes a Location instance.
         """
+        self.allow = kwargs.get("allow", [])
         self._alias = []
+        self.deny = kwargs.get("deny", [])
         self._directives = []
         self.language = kwargs.get("language", "html")
         self.location = kwargs.get("location", None)
@@ -63,6 +65,64 @@ class Location(object):
         
         if alias not in self.alias:
             self._alias.append(alias)
+
+
+    @property
+    def allow(self):
+        """
+        Returns the allow directives enforced at this location.
+        """
+        return self._allow
+
+
+    @allow.setter
+    def allow(self, directives):
+        """
+        Sets the allow directives enforced at this location.
+        """
+        if directives is None:
+            directives = []
+        if not isinstance(directives, list):
+            raise TypeError("The allow directives must be a list, not %s." % (type(directives).__name__))
+        if not hasattr(self, "_allow"):
+            self._allow = []
+        if "all" in self.allow:
+            return
+        for directive in directives:
+            if directive == "all":
+                self._allow = ["all"]
+                break;
+            elif directive not in self.allow:
+                self._allow.append(directive)
+
+
+    @property
+    def deny(self):
+        """
+        Returns the deny directives enforced at this location.
+        """
+        return self._deny
+
+
+    @deny.setter
+    def deny(self, directives):
+        """
+        Sets the deny directives enforced at this location.
+        """
+        if directives is None:
+            directives = []
+        if not isinstance(directives, list):
+            raise TypeError("The deny directives must be a list, not %s." % (type(directives).__name__))
+        if not hasattr(self, "_deny"):
+            self._deny = []
+        if "all" in self.deny:
+            return
+        for directive in directives:
+            if directive == "all":
+                self._deny = ["all"]
+                break;
+            elif directive not in self.deny:
+                self._deny.append(directive)
 
 
     @property

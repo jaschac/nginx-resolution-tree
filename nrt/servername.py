@@ -38,6 +38,8 @@ class ServerName(object):
 
             if location not in self.locations.keys():
                 handle_location = Location(**{
+                                                "allow" : parameters.get("allow", None),
+                                                "deny" : parameters.get("deny", None),
                                                 "language" : parameters.get("language", None),
                                                 "location" : location,
                                                 }

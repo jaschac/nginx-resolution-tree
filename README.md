@@ -170,6 +170,24 @@ A `Location` is associated to a list of containers, referred to as `alias`. For 
 file to be valid, multiple containers must not redefine the same location within the same server
 block.
 
+The `Location` class hosts several optional parameters that can be passed in by the client to
+customize what is being served at that particular location. The optional `Location parameters are:
+
+  - `allow`: a list of allow directives. It defines who can access the content served at this
+  location. It defaults to `all`. It is represented as a list of strings whose values represent
+  individual IPs or entire subnetworks. The default value is dropped as soon as anything else is
+  added to the allow directives.
+  - `deny`: a list of deny directives. It defines who cannot access the content server at this
+  location. It defaults to an empty list, which means none is denied access. It is represented as a
+  list of strings whose values represent individual IPs or entire subnetworks. It can be set to
+  'all'. When `deny` is set to `all`, any other deny directive is discarded.
+  - `language`: it tells `Nrt` which kind of Nginx location block template should be used. Valid
+  values are `html`, which is the default, `php` and `python`.
+
+
+A `Location` object having both `allow` and `deny` directives set to `all` results in being
+invalid.
+
 
 #### Nrt
 This module defines the `Nrt` class, which represents the resolution problem *per se*.
