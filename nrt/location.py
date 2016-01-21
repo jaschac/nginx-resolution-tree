@@ -26,7 +26,7 @@ class Location(object):
         """
         self._alias = []
         self._directives = []
-        self._language = kwargs.get("language", "html")
+        self.language = kwargs.get("language", "html")
         self.location = kwargs.get("location", None)
 
 

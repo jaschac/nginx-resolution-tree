@@ -21,6 +21,7 @@ class TestLocation(TestBase):
                                                     }
                                         )
         self.valid_alias = "foo"
+        self.valid_languages = ["html", "php", "python"]
         self.valid_location_root = "/"
         self.valid_location = "/var/www/foo/"
 
@@ -285,13 +286,14 @@ class TestLocation(TestBase):
     def test_init_correct(self):
         """
         Tests that an Location object is properly instantiated if a proper location is passed in
-        during initialization. 
+        during initialization.
         """
         handle_location = Location(**{
                                         "location" : self.valid_location
                                         }
                                     )
         self.assertEqual(handle_location.location, self.valid_location)
+        self.assertEqual(handle_location.language, 'html')
         self.assertEqual(handle_location.alias, [])
         self.assertFalse(handle_location.is_valid)
         del handle_location
@@ -307,9 +309,75 @@ class TestLocation(TestBase):
                                         }
                                     )
         self.assertEqual(handle_location.location, self.valid_location_root)
+        self.assertEqual(handle_location.language, 'html')
         self.assertEqual(handle_location.alias, [])
         self.assertFalse(handle_location.is_valid)
         del handle_location
+
+
+    def test_init_correct_language(self):
+        """
+        Tests that an Location object is properly instantiated if, apart from a proper location, the
+        object is passed in a valid language.
+        """
+        for language in self.valid_languages:
+            handle_location = Location(**{
+                                            "language" : language,
+                                            "location" : self.valid_location
+                                            }
+                                        )
+            self.assertEqual(handle_location.location, self.valid_location)
+            self.assertEqual(handle_location.language, language)
+            self.assertEqual(handle_location.alias, [])
+            self.assertFalse(handle_location.is_valid)
+            del handle_location
+
+
+    def test_init_correct_language_explicitly_set_to_none(self):
+        """
+        Tests that an Location object is properly instantiated and the language set by default to
+        'html' if, apart from a proper location, the language is explicitly set to None.
+        """
+        handle_location = Location(**{
+                                        "language" : None,
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.location, self.valid_location)
+        self.assertEqual(handle_location.language, 'html')
+        self.assertEqual(handle_location.alias, [])
+        self.assertFalse(handle_location.is_valid)
+        del handle_location
+
+
+    def test_init_wrong_invalid_language(self):
+        """
+        Tests that an Location object cannot be instantiated and a ValueError exception is raised
+        if a language is passed in as a string, but its value is not among the valid ones.
+        """
+        self.assertRaises(
+                            ValueError,
+                            Location,
+                            **{
+                                "language" : "ruby",
+                                "location" : self.valid_location,
+                                }
+                            )
+
+
+    def test_init_wrong_mistyped_language(self):
+        """
+        Tests that an Location object cannot be instantiated and a TypeError exception is raised
+        if a language is passed in, but not as a string.
+        """
+        self.assertRaises(
+                            TypeError,
+                            Location,
+                            **{
+                                "language" : 1234,
+                                "location" : self.valid_location,
+                                }
+                            )
 
 
     def test_init_wrong_missing_location(self):
