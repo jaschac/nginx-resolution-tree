@@ -24,7 +24,7 @@ class Location(object):
         """
         Initializes a Location instance.
         """
-        self.allow = kwargs.get("allow", [])
+        self.allow = kwargs.get("allow", ["all"])
         self._alias = []
         self.deny = kwargs.get("deny", [])
         self._directives = []
@@ -84,16 +84,12 @@ class Location(object):
             directives = []
         if not isinstance(directives, list):
             raise TypeError("The allow directives must be a list, not %s." % (type(directives).__name__))
-        if not hasattr(self, "_allow"):
-            self._allow = []
-        if "all" in self.allow:
+        
+        if directives == [] or "all" in directives:
+            self._allow = ["all"]
             return
-        for directive in directives:
-            if directive == "all":
-                self._allow = ["all"]
-                break;
-            elif directive not in self.allow:
-                self._allow.append(directive)
+
+        self._allow = [directive for directive in directives if directive not in self.allow]
 
 
     @property
@@ -113,16 +109,12 @@ class Location(object):
             directives = []
         if not isinstance(directives, list):
             raise TypeError("The deny directives must be a list, not %s." % (type(directives).__name__))
-        if not hasattr(self, "_deny"):
-            self._deny = []
-        if "all" in self.deny:
+        
+        if "all" in directives:
+            self._deny = ["all"]
             return
-        for directive in directives:
-            if directive == "all":
-                self._deny = ["all"]
-                break;
-            elif directive not in self.deny:
-                self._deny.append(directive)
+
+        self._deny = [directive for directive in directives if directive not in self.deny]
 
 
     @property
@@ -162,7 +154,7 @@ class Location(object):
         """
         Returns whether the Location is valid or not.
         """
-        return len(self._alias) == 1
+        return len(self._alias) == 1 and not ("all" in self.allow and "all" in self.deny)
 
 
     @property
