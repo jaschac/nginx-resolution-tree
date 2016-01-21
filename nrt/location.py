@@ -26,6 +26,7 @@ class Location(object):
         """
         self._alias = []
         self._directives = []
+        self._language = kwargs.get("language", "html")
         self.location = kwargs.get("location", None)
 
 
@@ -102,6 +103,29 @@ class Location(object):
         Returns whether the Location is valid or not.
         """
         return len(self._alias) == 1
+
+
+    @property
+    def language(self):
+        """
+        Returns the language served at this location.
+        """
+        return self._language
+
+
+    @language.setter
+    def language(self, language):
+        """
+        Sets the language of the object.
+        """
+        if language is None:
+            language = 'html'
+        if not isinstance(language, str):
+            raise TypeError("The language must be a string, not %s." % (type(language).__name__))
+        if language.lower() not in ("html", "php", "python"):
+            raise ValueError("%s is not a valid language." % (language))
+
+        self._language = language.lower()
 
 
     @property
