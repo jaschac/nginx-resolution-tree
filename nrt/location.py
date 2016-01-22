@@ -84,7 +84,7 @@ class Location(object):
         Sets the allow directives enforced at this location.
         """
         if directives is None:
-            directives = []
+            directives = ["all"]
         if not isinstance(directives, list):
             raise TypeError("The allow directives must be a list, not %s." % (type(directives).__name__))
         
