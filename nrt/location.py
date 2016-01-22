@@ -160,7 +160,7 @@ class Location(object):
         """
         Returns whether the Location is valid or not.
         """
-        return len(self._alias) == 1 and not ("all" in self.allow and "all" in self.deny)
+        return len(self._alias) == 1 and not ("all" in self.allow and "all" in self.deny) and not (self.allow == [] and self.deny == [])
 
 
     @property
