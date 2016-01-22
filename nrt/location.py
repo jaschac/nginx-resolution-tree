@@ -92,7 +92,7 @@ class Location(object):
             self._allow = ["all"]
             return
 
-        self._allow = [directive for directive in directives if directive not in self.allow]
+        self._allow = [directive for directive in set(directives) if directive not in self.allow]
 
 
     @property
@@ -120,7 +120,7 @@ class Location(object):
             self._deny = ["all"]
             return
 
-        self._deny = [directive for directive in directives if directive not in self.deny]
+        self._deny = [directive for directive in set(directives) if directive not in self.deny]
 
 
     @property
