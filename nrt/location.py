@@ -72,7 +72,10 @@ class Location(object):
         """
         Returns the allow directives enforced at this location.
         """
-        return self._allow
+        if hasattr(self, "_allow"):
+            return self._allow
+        else:
+            return []
 
 
     @allow.setter
@@ -85,7 +88,7 @@ class Location(object):
         if not isinstance(directives, list):
             raise TypeError("The allow directives must be a list, not %s." % (type(directives).__name__))
         
-        if directives == [] or "all" in directives:
+        if "all" in directives:
             self._allow = ["all"]
             return
 
@@ -97,7 +100,10 @@ class Location(object):
         """
         Returns the deny directives enforced at this location.
         """
-        return self._deny
+        if hasattr(self, "_deny"):
+            return self._deny
+        else:
+            return []
 
 
     @deny.setter
