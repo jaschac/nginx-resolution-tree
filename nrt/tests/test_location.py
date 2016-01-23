@@ -28,6 +28,84 @@ class TestLocation(TestBase):
         self.valid_location = "/var/www/foo/"
 
 
+    def test_allow_correct_defaults_to_all(self):
+        """
+        Tests that if we don't pass anything as an allow directives, it defaults to "all".
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.allow, ["all"])
+        handle_location.allow = None
+        self.assertEqual(handle_location.allow, ["all"])
+        del handle_location
+
+
+    def test_allow_correct(self):
+        """
+        Tests that if we pass in a valid set of directives, allow is properly updated to that
+        value.
+        """
+        for valid_allow_directive in self.valid_allow_directives:
+            handle_location = Location(**{
+                                            "location" : self.valid_location
+                                            }
+                                        )
+            handle_location.allow = valid_allow_directive
+            self.assertEqual(handle_location.allow, valid_allow_directive)
+            del handle_location
+
+
+    def test_allow_correct_all_rules_any_other_rule_out(self):
+        """
+        Tests that if any of the allow directives is "all" then all other allow directives are not
+        considered at all.
+        """
+        allow_directives = ["1.2.3.4", "1.2.3.5/24", "all", "2.2.2.2"]
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.allow = allow_directives
+        self.assertEqual(handle_location.allow, ["all"])
+        del handle_location
+
+
+    def test_allow_correct_no_dupes(self):
+        """
+        Tests that if among the allow directives passed in "all" is not present, only a unique copy
+        of each allow directive is stored.
+        """
+        allow_directives = ["1.2.3.4"]
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.allow = allow_directives * 5
+        self.assertEqual(handle_location.allow, ["1.2.3.4"])
+        del handle_location
+
+
+    def test_allow_wrong_mistyped(self):
+        """
+        Tests that a TypeError exception is raised if allow directives are passed in but not as a
+        list.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "allow",
+                            "not_a_list",
+                            )
+        del handle_location
+
+
     def test_alias_correct_multiple_times_the_same_alias(self):
         """
         Tests that if a Location object is passed multiple times the same alias, only one is
@@ -136,6 +214,84 @@ class TestLocation(TestBase):
             handle_location.directives = directive
         self.assertEqual(len(handle_location.alias), 1)
         self.assertEqual(list(handle_location.alias)[0], alias)
+        del handle_location
+
+
+    def test_deny_correct_defaults_to_all(self):
+        """
+        Tests that if we don't pass anything as a deny directives, it defaults to an empty list.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.deny, [])
+        handle_location.deny = None
+        self.assertEqual(handle_location.deny, [])
+        del handle_location
+
+
+    def test_deny_correct(self):
+        """
+        Tests that if we pass in a valid set of directives, deny is properly updated to that
+        value.
+        """
+        for valid_deny_directive in self.valid_deny_directives:
+            handle_location = Location(**{
+                                            "location" : self.valid_location
+                                            }
+                                        )
+            handle_location.deny = valid_deny_directive
+            self.assertEqual(handle_location.deny, valid_deny_directive)
+            del handle_location
+
+
+    def test_deny_correct_all_rules_any_other_rule_out(self):
+        """
+        Tests that if any of the deny directives is "all" then all other deny directives are not
+        considered at all.
+        """
+        deny_directives = ["1.2.3.4", "1.2.3.5/24", "all", "2.2.2.2"]
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.deny = deny_directives
+        self.assertEqual(handle_location.deny, ["all"])
+        del handle_location
+
+
+    def test_deny_correct_no_dupes(self):
+        """
+        Tests that if among the deny directives passed in "all" is not present, only a unique copy
+        of each deny directive is stored.
+        """
+        deny_directives = ["1.2.3.4"]
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.deny = deny_directives * 5
+        self.assertEqual(handle_location.deny, ["1.2.3.4"])
+        del handle_location
+
+
+    def test_deny_wrong_mistyped(self):
+        """
+        Tests that a TypeError exception is raised if deny directives are passed in but not as a
+        list.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "deny",
+                            "not_a_list",
+                            )
         del handle_location
 
 
@@ -321,284 +477,6 @@ class TestLocation(TestBase):
         del handle_location
 
 
-    def test_init_correct_allow_directives(self):
-        """
-        Tests that an Location object is properly instantiated if, apart from a proper location, the
-        object is passed in valid allow directives.
-        """
-        for valid_allow_directive in self.valid_allow_directives:
-            handle_location = Location(**{
-                                            "allow" : valid_allow_directive,
-                                            "location" : self.valid_location
-                                            }
-                                        )
-            self.assertEqual(handle_location.location, self.valid_location)
-            self.assertEqual(handle_location.language, "html")
-            self.assertEqual(handle_location.alias, [])
-            self.assertEqual(handle_location.allow, valid_allow_directive)
-            self.assertEqual(handle_location.deny, [])
-            self.assertFalse(handle_location.is_valid)
-            del handle_location
-
-
-    def test_init_correct_allow_directives_no_directives(self):
-        """
-        Tests that a properly initializated Location object automatically sets the allow directives
-        to "all" if no allow directive is explicitly passed in.
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_allow_directives_none_translates_to_all(self):
-        """
-        Tests that a properly initializated Location object automatically sets its allow directives
-        to "all" is none is explicitly passed in.
-        """
-        handle_location = Location(**{
-                                        "allow" : None,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_allow_directives_all_rules_any_other_rule_out(self):
-        """
-        Tests that in a properly initializated Location object, if any of the allow directives is
-        "all" then all other allow directives are not considered at all.
-        """
-        allow_directives = ["1.2.3.4", "1.2.3.5/24", "all", "2.2.2.2"]
-        handle_location = Location(**{
-                                        "allow" : allow_directives,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_allow_directives_no_dupes(self):
-        """
-        Tests that in a properly initializated Location object, if among the allow directives
-        passed in "all" is not present, only a unique copy of each allow directive is stored.
-        """
-        allow_directives = ["1.2.3.4"]
-        handle_location = Location(**{
-                                        "allow" : allow_directives * 5,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["1.2.3.4"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_deny_directives(self):
-        """
-        Tests that an Location object is properly instantiated if, apart from a proper location, the
-        object is passed in valid deny directives.
-        """
-        for valid_deny_directive in self.valid_deny_directives:
-            handle_location = Location(**{
-                                            "deny" : valid_deny_directive,
-                                            "location" : self.valid_location
-                                            }
-                                        )
-            self.assertEqual(handle_location.location, self.valid_location)
-            self.assertEqual(handle_location.language, "html")
-            self.assertEqual(handle_location.alias, [])
-            self.assertEqual(handle_location.allow, ["all"])
-            self.assertEqual(handle_location.deny, valid_deny_directive)
-            self.assertFalse(handle_location.is_valid)
-            del handle_location
-
-
-    def test_init_correct_deny_directives_no_directives(self):
-        """
-        Tests that a properly initializated Location object automatically sets the deny directives
-        to empty if no allow directive is explicitly passed in.
-        """
-        handle_location = Location(**{
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_deny_directives_none_translates_to_empty(self):
-        """
-        Tests that a properly initializated Location object automatically sets its deny directives
-        to empty is none is explicitly passed in.
-        """
-        handle_location = Location(**{
-                                        "deny" : None,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_deny_directives_all_rules_any_other_rule_out(self):
-        """
-        Tests that in a properly initializated Location object, if any of the deny directives is
-        "all" then all other deny directives are not considered at all.
-        """
-        deny_directives = ["1.2.3.4", "1.2.3.5/24", "all", "2.2.2.2"]
-        handle_location = Location(**{
-                                        "deny" : deny_directives,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, ["all"])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_correct_deny_directives_no_dupes(self):
-        """
-        Tests that in a properly initializated Location object, if among the deny directives
-        passed in "all" is not present, only a unique copy of each deny directive is stored.
-        """
-        deny_directives = ["1.2.3.4"]
-        handle_location = Location(**{
-                                        "deny" : deny_directives * 5,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, "html")
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, ["1.2.3.4"])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_wrong_mistyped_allow_directives(self):
-        """
-        Tests that an Location object cannot be instantiated and a TypeError exception is raised
-        if allow directives are passed in but not as a list.
-        """
-        self.assertRaises(
-                            TypeError,
-                            Location,
-                            **{
-                                "allow" : "not_a_list",
-                                "location" : self.valid_location,
-                                }
-                            )
-
-
-    def test_init_correct_language(self):
-        """
-        Tests that an Location object is properly instantiated if, apart from a proper location, the
-        object is passed in a valid language.
-        """
-        for language in self.valid_languages:
-            handle_location = Location(**{
-                                            "language" : language,
-                                            "location" : self.valid_location
-                                            }
-                                        )
-            self.assertEqual(handle_location.location, self.valid_location)
-            self.assertEqual(handle_location.language, language)
-            self.assertEqual(handle_location.alias, [])
-            self.assertEqual(handle_location.allow, ["all"])
-            self.assertEqual(handle_location.deny, [])
-            self.assertFalse(handle_location.is_valid)
-            del handle_location
-
-
-    def test_init_correct_language_explicitly_set_to_none(self):
-        """
-        Tests that an Location object is properly instantiated and the language set by default to
-        'html' if, apart from a proper location, the language is explicitly set to None.
-        """
-        handle_location = Location(**{
-                                        "language" : None,
-                                        "location" : self.valid_location
-                                        }
-                                    )
-        self.assertEqual(handle_location.location, self.valid_location)
-        self.assertEqual(handle_location.language, 'html')
-        self.assertEqual(handle_location.alias, [])
-        self.assertEqual(handle_location.allow, ["all"])
-        self.assertEqual(handle_location.deny, [])
-        self.assertFalse(handle_location.is_valid)
-        del handle_location
-
-
-    def test_init_wrong_invalid_language(self):
-        """
-        Tests that an Location object cannot be instantiated and a ValueError exception is raised
-        if a language is passed in as a string, but its value is not among the valid ones.
-        """
-        self.assertRaises(
-                            ValueError,
-                            Location,
-                            **{
-                                "language" : "ruby",
-                                "location" : self.valid_location,
-                                }
-                            )
-
-
-    def test_init_wrong_mistyped_language(self):
-        """
-        Tests that an Location object cannot be instantiated and a TypeError exception is raised
-        if a language is passed in, but not as a string.
-        """
-        self.assertRaises(
-                            TypeError,
-                            Location,
-                            **{
-                                "language" : 1234,
-                                "location" : self.valid_location,
-                                }
-                            )
-
-
     def test_init_wrong_missing_location(self):
         """
         Tests that an Location object cannot be instantiated and a ValueError exception is raised
@@ -679,4 +557,68 @@ class TestLocation(TestBase):
         handle_location.alias = "foo1"
         handle_location.alias = "foo2"
         self.assertFalse(handle_location.is_valid)
+        del handle_location
+
+
+    def test_language_correct(self):
+        """
+        Tests that the language property is properly set if we pass in a valid language.
+        """
+        for language in self.valid_languages:
+            handle_location = Location(**{
+                                            "location" : self.valid_location
+                                            }
+                                        )
+            handle_location.language = language
+            self.assertEqual(handle_location.language, language)
+            del handle_location
+
+
+    def test_language_correct_defaults_to_html(self):
+        """
+        Tests that the language is set by default to 'html' if we don't provide any or if we assign
+        it None.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertEqual(handle_location.language, 'html')
+        del handle_location
+
+
+    def test_language_wrong_invalid(self):
+        """
+        Tests that a ValueError exception is raised if a language is passed in as a string,
+        but its value is not among the valid ones.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            ValueError,
+                            setattr,
+                            handle_location,
+                            "language",
+                            "not_a_valid_language",
+                            )
+        del handle_location
+
+
+    def test_language_wrong_mistyped(self):
+        """
+        Tests that a TypeError exception is raised if a language is passed in, but not as a string.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "language",
+                            123,
+                            )
         del handle_location

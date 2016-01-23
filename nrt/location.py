@@ -24,11 +24,11 @@ class Location(object):
         """
         Initializes a Location instance.
         """
-        self.allow = kwargs.get("allow", ["all"])
+        self._allow = ["all"]
         self._alias = []
-        self.deny = kwargs.get("deny", [])
+        self._deny = []
         self._directives = []
-        self.language = kwargs.get("language", "html")
+        self._language = "html"
         self.location = kwargs.get("location", None)
 
 
@@ -38,9 +38,14 @@ class Location(object):
         """
         for directive in self.directives:
             alias, ip, port, server_name, location = directive["signature"].split(":")
+            parameters = directive.get("parameters", {})
 
             if alias not in self.alias:
                 self.alias = alias
+
+            self.allow = parameters.get("allow", None)
+            self.deny = parameters.get("deny", None)
+            self.language = parameters.get("language", None)
 
 
     @property
@@ -72,10 +77,7 @@ class Location(object):
         """
         Returns the allow directives enforced at this location.
         """
-        if hasattr(self, "_allow"):
-            return self._allow
-        else:
-            return []
+        return self._allow
 
 
     @allow.setter
@@ -92,6 +94,10 @@ class Location(object):
             self._allow = ["all"]
             return
 
+        if directives == []:
+            self._allow = []
+            return
+
         self._allow = [directive for directive in set(directives) if directive not in self.allow]
 
 
@@ -100,10 +106,7 @@ class Location(object):
         """
         Returns the deny directives enforced at this location.
         """
-        if hasattr(self, "_deny"):
-            return self._deny
-        else:
-            return []
+        return self._deny
 
 
     @deny.setter
@@ -207,5 +210,4 @@ class Location(object):
             raise ValueError("A empty string is not a valid location.")
         if not location[0] == location[-1] == "/":
             raise ValueError("The locations must start and end with a forward slash.")
-
         self._location = location

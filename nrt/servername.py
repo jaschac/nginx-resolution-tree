@@ -34,18 +34,13 @@ class ServerName(object):
         """
         for directive in self.directives:
             alias, ip, port, server_name, location = directive["signature"].split(":")
-            parameters = directive.get("parameters", {})
 
             if location not in self.locations.keys():
                 handle_location = Location(**{
-                                                "allow" : parameters.get("allow", None),
-                                                "deny" : parameters.get("deny", None),
-                                                "language" : parameters.get("language", None),
                                                 "location" : location,
                                                 }
                                             )
                 self.locations = handle_location
-
             self.locations[location].directives = directive
 
 
