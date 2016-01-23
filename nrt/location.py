@@ -29,6 +29,7 @@ class Location(object):
         self._deny = []
         self._directives = []
         self._language = "html"
+        self._language_configuration = {}
         self.location = kwargs.get("location", None)
 
 
@@ -36,6 +37,11 @@ class Location(object):
         """
         Turns the input directives into a unique list of alias entries.
         """
+        language_configuration_map = {
+                                        "php" : "phpfmp",
+                                        "python" : "gunicorn",
+                                        }
+
         for directive in self.directives:
             alias, ip, port, server_name, location = directive["signature"].split(":")
             parameters = directive.get("parameters", {})
@@ -46,6 +52,7 @@ class Location(object):
             self.allow = parameters.get("allow", None)
             self.deny = parameters.get("deny", None)
             self.language = parameters.get("language", None)
+            self.language_configuration = parameters.get(language_configuration_map.get(self.language, None), {})
 
 
     @property
@@ -187,6 +194,35 @@ class Location(object):
             raise ValueError("%s is not a valid language." % (language))
 
         self._language = language.lower()
+
+
+    @property
+    def language_configuration(self):
+        """
+        Returns the configuration specific to the language served at this location.
+        """
+        return self._language_configuration
+
+
+    @language_configuration.setter
+    def language_configuration(self, configuration):
+        """
+        Sets the configuration specific to the language of the object.
+        """
+        if not isinstance(configuration, dict):
+            raise TypeError("The language configuration must be a dictionary, not %s." % (type(configuration).__name__))
+        
+        if self.language == "python":
+            if "ip" not in configuration.keys():
+                configuration["ip"] = "127.0.0.1"
+            if "port" not in configuration.keys():
+                configuration["port"] = "8000"
+            if not isinstance(configuration["ip"], str):
+                raise TypeError("GUnicorn's IP must be a string, not %s." % (type(configuration["ip"]).__name__))
+            if not isinstance(configuration["port"], str):
+                raise TypeError("GUnicorn's port must be a string, not %s." % (type(configuration["port"]).__name__))
+
+        self._language_configuration = configuration
 
 
     @property

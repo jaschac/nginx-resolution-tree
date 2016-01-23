@@ -315,7 +315,7 @@ $ for module in listen location nrt servername; do python -m unittest nrt.tests.
 Ran 28 tests in 0.009s
 OK
 
-Ran 22 tests in 0.004s
+Ran 42 tests in 0.009s
 OK
 
 Ran 19 tests in 0.005s
@@ -328,14 +328,14 @@ OK
 ```bash
 Name                Stmts   Miss  Cover   Missing
 -------------------------------------------------   
-nrt/listen.py          76      6    92%   35, 52-56
-nrt/location.py        54      0   100%   
-nrt/nrt.py             50      0   100%   
-nrt/servername.py      58      0   100%   
--------------------------------------------------
-TOTAL                 238      6    97%   
+nrt/listen.py               76      6    92%   35, 52-56
+nrt/location.py            114      0   100%   
+nrt/nrt.py                  62     11    82%   147-158
+nrt/servername.py           58      0   100%   
+------------------------------------------------------
+TOTAL                      310     17    95%   
 ----------------------------------------------------------------------
-Ran 91 tests in 0.061s
+Ran 111 tests in 0.076s
 OK
 ```
 

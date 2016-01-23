@@ -622,3 +622,115 @@ class TestLocation(TestBase):
                             123,
                             )
         del handle_location
+
+
+    def test_language_configuration_correct_python(self):
+        """
+        Tests that setting the language as Python gets the contents of the gunicorn key from the
+        parameters. An ad hoc key is injected into the gunicorn parameters and is then retrieved.
+        """
+        parameters = {"language" : "python", "gunicorn" : {"test key" : "gunicorn"}}
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/", "parameters" : parameters}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.directives = directive
+        self.assertTrue("gunicorn" in handle_location.language_configuration.values())
+        del handle_location
+
+
+    def test_language_configuration_correct_python_default_values(self):
+        """
+        Tests that setting the language as Python but not providing any configuration parameter for
+        Gunicorn gets it to the default 127.0.0.1:8000 address.
+        """
+        parameters = {"language" : "python"}
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/", "parameters" : parameters}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.directives = directive
+        self.assertEqual(handle_location.language_configuration["ip"], "127.0.0.1")
+        self.assertEqual(handle_location.language_configuration["port"], "8000")
+        del handle_location
+
+
+    def test_language_configuration_correct_python_custom_values(self):
+        """
+        Tests that setting the language as Python gets Gunicorn to point to the specified address
+        if its parameters are passed in.
+        """
+        parameters = {"language" : "python", "gunicorn" : {"ip" : "1.2.3.4", "port" : "1234"}}
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/", "parameters" : parameters}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        handle_location.directives = directive
+        self.assertEqual(handle_location.language_configuration["ip"], "1.2.3.4")
+        self.assertEqual(handle_location.language_configuration["port"], "1234")
+        del handle_location
+
+
+    def test_language_configuration_wrong_mistyped(self):
+        """
+        Tests that a TypeError exception is raised if the language configuration is passed in, but
+        not as a dictionary.
+        """
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "language_configuration",
+                            123,
+                            )
+        del handle_location
+
+
+    def test_language_configuration_wrong_python_mistyped_ip(self):
+        """
+        Tests that a TypeError exception is raised if the language is Python and the IP of GUnicorn
+        is passed in, but not as a string.
+        """
+        parameters = {"language" : "python", "gunicorn" : {"ip" : 123}}
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/", "parameters" : parameters}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            directive,
+                            )
+        del handle_location
+
+
+    def test_language_configuration_wrong_python_mistyped_port(self):
+        """
+        Tests that a TypeError exception is raised if the language is Python and the port of
+        GUnicorn is passed in, but not as a string.
+        """
+        parameters = {"language" : "python", "gunicorn" : {"port" : 123}}
+        directive = { "signature" : "a:0.0.0.0:80:a.b.c:/", "parameters" : parameters}
+        handle_location = Location(**{
+                                        "location" : self.valid_location
+                                        }
+                                    )
+        self.assertRaises(
+                            TypeError,
+                            setattr,
+                            handle_location,
+                            "directives",
+                            directive,
+                            )
+        del handle_location
